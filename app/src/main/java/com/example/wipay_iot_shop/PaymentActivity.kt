@@ -42,6 +42,7 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener{
 
     var ret: Int = 0
     var Tag5A_data = ""
+    var Tag5F24_data = ""
     var Tag57_data = ""
     var PAN = ""
     var Tag95_data = ""
@@ -315,6 +316,7 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener{
         }else{
             if (cardType == 1) {
                 Tag5A_data = ""
+                Tag5F24_data = ""
                 PosApiHelper.getInstance().SysLogSwitch(1)
                 EMVCOHelper.EmvEnvParaInit() // 1
                 EMVCOHelper.EmvClearAllCapks() // 2
@@ -349,15 +351,18 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener{
                 EMVCOHelper.EmvAddOneAIDS(Visaaid8, Visaaid8.size)
                 EMVCOHelper.EmvSaveTermParas(TermParabuf, TermParabuf.size, 0)
                 ret = EMVCOHelper.EmvKeyPadInit(this)
-                EMVCOHelper.SetPinPadTime(20) //set pinpad timeout is 20 seconds
+                EMVCOHelper.SetPinPadTime(0) //set pinpad timeout is 20 seconds
                 if (ret != 0) {
                     m_bThreadFinished = true
 
                     return
                 }
                 val TagCardNo = 0x5A
+                val TagCardEXD = 0x5F24
                 val TagCardNo_len: Int
+                val TagCardEXD_len: Int
                 val CardNoData = ByteArray(56)
+                val EXDData = ByteArray(56)
                 val TagPIN = 0xDF7E
                 val TagKSN = 0xDF7F
                 val PinData_len: Int
@@ -387,19 +392,27 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener{
                     runOnUiThread { strEmvStatus = "EMV  GOONLINE" }
                 }
                 TagCardNo_len = EMVCOHelper.EmvGetTagData(CardNoData, 56, TagCardNo.toInt())
+                TagCardEXD_len = EMVCOHelper.EmvGetTagData(EXDData, 56, TagCardEXD.toInt())
                 for (i in 0 until TagCardNo_len) {
                     Log.e("CardNoData", "i = " + i + "  " + CardNoData[i])
                     Tag5A_data += ByteUtil.byteToHexString(CardNoData[i] /*& 0xFF*/)
                 }
+                for (i in 0 until TagCardEXD_len) {
+                    Log.e("EXDData", "i = " + i + "  " + EXDData[i])
+                    Tag5F24_data += ByteUtil.byteToHexString(EXDData[i] /*& 0xFF*/)
+                }
                 if (TagCardNo_len % 2 != 0) {
                     Tag5A_data = Tag5A_data.substring(0, TagCardNo_len * 2 - 1)
+                }
+                if (TagCardEXD_len % 2 != 0) {
+                    Tag5F24_data = Tag5F24_data.substring(0, TagCardEXD_len * 2 - 1)
                 }
                 PinData_len = EMVCOHelper.EmvGetTagData(PinData, 56, TagPIN)
                 val TagPin_data = ByteUtil.bytearrayToHexString(PinData, PinData_len)
                 KsnData_len = EMVCOHelper.EmvGetTagData(KsnData, 56, TagKSN)
                 val Ksn_data = ByteUtil.bytearrayToHexString(KsnData, KsnData_len)
                 val bypass = EMVCOHelper.EmvPinbyPass()
-                Log.e("VPOS",strEmvStatus + "\nCardNO:" + Tag5A_data + "\n" + "PIN0:" + TagPin_data + "\n" + "KSN0:" + Ksn_data)
+                Log.e("VPOS",strEmvStatus + "\nCardNO:" + Tag5A_data + "Card Expridate:"+Tag5F24_data+"\n" + "PIN0:" + TagPin_data + "\n" + "KSN0:" + Ksn_data)
 //                runOnUiThread {
 //                    tvEmvMsg.setText(strEmvStatus + "\nCardNO:" + Tag5A_data + "\n" + "PIN0:" + TagPin_data + "\n" + "KSN0:" + Ksn_data)
 //
