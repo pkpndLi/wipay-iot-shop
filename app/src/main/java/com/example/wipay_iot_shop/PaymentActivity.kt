@@ -1,12 +1,19 @@
 package com.example.wipay_iot_shop
 
+import android.Manifest
+import android.content.Intent
+import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.view.Window
+import android.view.WindowManager
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import vpos.apipackage.ByteUtil
 import vpos.apipackage.PosApiHelper
 import vpos.apipackage.StringUtil
@@ -25,6 +32,14 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener{
     private var m_bThreadFinished = true
 
     ///////////////////////EMV Config///////////////////////////////
+
+    var MY_PERMISSIONS_STORAGE = arrayOf(
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.MOUNT_UNMOUNT_FILESYSTEMS"
+    )
+    val REQUEST_EXTERNAL_STORAGE = 1
+
     var ret: Int = 0
     var Tag5A_data = ""
     var Tag57_data = ""
@@ -157,6 +172,11 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener{
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_payment)
+//        requestWindowFeature(Window.FEATURE_NO_TITLE)
+//        window.setFlags(
+//            WindowManager.LayoutParams.FLAG_FULLSCREEN,
+//            WindowManager.LayoutParams.FLAG_FULLSCREEN
+//        )
         setView()
 
 
@@ -264,7 +284,7 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener{
                         Log.e("VPOS", "*************loop detecting return 00")
                         PosApiHelper.getInstance().EntryPoint_Close()
                         Log.e("VPOS", "*************loop detecting return11 ")
-                        TransationProcess(mCardType)
+                        requestPermission()
                     }
                     else if (Status == 3){
                         Toast.makeText(this, "Promptpay.", Toast.LENGTH_SHORT).show()
@@ -332,6 +352,7 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener{
                 EMVCOHelper.SetPinPadTime(20) //set pinpad timeout is 20 seconds
                 if (ret != 0) {
                     m_bThreadFinished = true
+
                     return
                 }
                 val TagCardNo = 0x5A
@@ -378,7 +399,7 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener{
                 KsnData_len = EMVCOHelper.EmvGetTagData(KsnData, 56, TagKSN)
                 val Ksn_data = ByteUtil.bytearrayToHexString(KsnData, KsnData_len)
                 val bypass = EMVCOHelper.EmvPinbyPass()
-                Log.i("VPOS",strEmvStatus + "\nCardNO:" + Tag5A_data + "\n" + "PIN0:" + TagPin_data + "\n" + "KSN0:" + Ksn_data)
+                Log.e("VPOS",strEmvStatus + "\nCardNO:" + Tag5A_data + "\n" + "PIN0:" + TagPin_data + "\n" + "KSN0:" + Ksn_data)
 //                runOnUiThread {
 //                    tvEmvMsg.setText(strEmvStatus + "\nCardNO:" + Tag5A_data + "\n" + "PIN0:" + TagPin_data + "\n" + "KSN0:" + Ksn_data)
 //
@@ -391,15 +412,30 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener{
         }
 
     }
+    private fun requestPermission() {
+        //Check if there is write permission
+        val checkCallPhonePermission: Int = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        if (checkCallPhonePermission != PackageManager.PERMISSION_GRANTED) {
+            //Without the permission to Write, to apply for the permission to Read and Write, the system will pop up the permission dialog
+            ActivityCompat.requestPermissions(this, MY_PERMISSIONS_STORAGE,REQUEST_EXTERNAL_STORAGE)
+        } else {
+            TransationProcess(mCardType)
+        }
+    }
 
 
 
 
-
-
-
-
-
-
+    private val DISABLE_FUNCTION_LAUNCH_ACTION = "android.intent.action.DISABLE_FUNCTION_LAUNCH"
+    // disable the power key when the device is boot from alarm but not ipo boot
+    private fun disableFunctionLaunch(state: Boolean) {
+        val disablePowerKeyIntent = Intent(DISABLE_FUNCTION_LAUNCH_ACTION)
+        if (state) {
+            disablePowerKeyIntent.putExtra("state", true)
+        } else {
+            disablePowerKeyIntent.putExtra("state", false)
+        }
+        sendBroadcast(disablePowerKeyIntent)
+    }
 
 }
