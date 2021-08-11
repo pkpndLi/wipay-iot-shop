@@ -1,6 +1,7 @@
 package com.example.wipay_iot_shop
 
 import android.content.Context
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
@@ -11,6 +12,8 @@ import android.graphics.drawable.Drawable
 
 
 class MenuActivity : AppCompatActivity() {
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_menu)
@@ -24,6 +27,34 @@ class MenuActivity : AppCompatActivity() {
         goodsImg1.setImageDrawable(getImage(this, "coffee"))
         goodsImg2.setImageDrawable(getImage(this, "coffee1"))
         goodsImg3.setImageDrawable(getImage(this, "brownie"))
+
+        goodsImg1.setOnClickListener{
+
+            val itn =Intent(this,InfoActivity::class.java).apply{
+                putExtra("menu","goods1")
+                putExtra("amount",145)
+            }
+            startActivity(itn)
+        }
+
+        goodsImg2.setOnClickListener{
+            val itn =Intent(this,InfoActivity::class.java).apply{
+                putExtra("menu","goods2")
+                putExtra("amount",145)
+            }
+            startActivity(itn)
+        }
+
+        goodsImg3.setOnClickListener{
+            val itn =Intent(this,InfoActivity::class.java).apply{
+                putExtra("menu","goods3")
+                putExtra("amount",120)
+            }
+            startActivity(itn)
+        }
+
+
+
     }
 
     fun getImage(context: Context, name: String?): Drawable? {

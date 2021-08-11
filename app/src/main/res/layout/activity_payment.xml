@@ -13,7 +13,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="40dp"
         android:layout_marginTop="40dp"
-        android:fontFamily="sans-serif-black"
+        android:fontFamily="monofur_bold_for_powerline"
         android:text="Payment"
         android:textSize="24dp"
         app:layout_constraintStart_toStartOf="parent"
