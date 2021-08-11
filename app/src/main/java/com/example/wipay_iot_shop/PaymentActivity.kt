@@ -430,9 +430,10 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener{
                 EMVCOHelper.EmvFinal()
 
 
-                val itn =Intent(this,MenuActivity::class.java).apply{
-                    putExtra("CardNO",Tag5A_data)
+                val itn =Intent(this,TransactionActivity::class.java).apply{
+                    putExtra("cardNO",Tag5A_data)
                     putExtra("EXD",Tag5F24_data)
+                    putExtra("totalAmount",totalAmount)
                 }
                 startActivity(itn)
             }
