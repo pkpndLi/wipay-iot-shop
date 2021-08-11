@@ -31,6 +31,9 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener{
     private val bIsBack = false
     private var m_bThreadFinished = true
 
+    var totalAmount:Int? = null
+
+
     ///////////////////////EMV Config///////////////////////////////
 
     var MY_PERMISSIONS_STORAGE = arrayOf(
@@ -178,7 +181,15 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener{
 //            WindowManager.LayoutParams.FLAG_FULLSCREEN,
 //            WindowManager.LayoutParams.FLAG_FULLSCREEN
 //        )
-        setView()
+
+            intent.apply {
+                totalAmount = getIntExtra("totalAmount",145)
+            }
+
+            Toast.makeText(applicationContext,"totalAmount" + totalAmount,Toast.LENGTH_LONG).show()
+
+
+            setView()
 
 
     }
@@ -373,7 +384,9 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener{
                 EMVCOHelper.SetPinPadType(1)
                 EMVCOHelper.EmvKernelInit()
                 EMVCOHelper.EmvSetTransType(1)
-                EMVCOHelper.EmvSetTransAmount(100000)
+                if (totalAmount!=null){
+                    EMVCOHelper.EmvSetTransAmount(totalAmount!!)
+                }
                 EMVCOHelper.EmvSetCardType(1)
                 EMVCOHelper.SetAutoAddKSNPIN(1)
                 ret = EMVCOHelper.EmvProcess(1, 0) //The FLOWTYPE value is 1- simplifies the process
@@ -412,6 +425,7 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener{
                 KsnData_len = EMVCOHelper.EmvGetTagData(KsnData, 56, TagKSN)
                 val Ksn_data = ByteUtil.bytearrayToHexString(KsnData, KsnData_len)
                 val bypass = EMVCOHelper.EmvPinbyPass()
+                //////////////////////////////////////////////Card No & EXD ////////////////////////////////////////////////////////////
                 Log.e("VPOS",strEmvStatus + "\nCardNO:" + Tag5A_data + "Card Expridate:"+Tag5F24_data+"\n" + "PIN0:" + TagPin_data + "\n" + "KSN0:" + Ksn_data)
 //                runOnUiThread {
 //                    tvEmvMsg.setText(strEmvStatus + "\nCardNO:" + Tag5A_data + "\n" + "PIN0:" + TagPin_data + "\n" + "KSN0:" + Ksn_data)
@@ -435,8 +449,6 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener{
             TransationProcess(mCardType)
         }
     }
-
-
 
 
     private val DISABLE_FUNCTION_LAUNCH_ACTION = "android.intent.action.DISABLE_FUNCTION_LAUNCH"
