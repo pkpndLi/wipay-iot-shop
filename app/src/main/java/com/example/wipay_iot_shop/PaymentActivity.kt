@@ -362,10 +362,9 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener{
                 EMVCOHelper.EmvAddOneAIDS(Visaaid8, Visaaid8.size)
                 EMVCOHelper.EmvSaveTermParas(TermParabuf, TermParabuf.size, 0)
                 ret = EMVCOHelper.EmvKeyPadInit(this)
-                EMVCOHelper.SetPinPadTime(0) //set pinpad timeout is 20 seconds
+                EMVCOHelper.SetPinPadTime(5) //set pinpad timeout
                 if (ret != 0) {
                     m_bThreadFinished = true
-
                     return
                 }
                 val TagCardNo = 0x5A
@@ -427,18 +426,21 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener{
                 val bypass = EMVCOHelper.EmvPinbyPass()
                 //////////////////////////////////////////////Card No & EXD ////////////////////////////////////////////////////////////
                 Log.e("VPOS",strEmvStatus + "\nCardNO:" + Tag5A_data + "Card Expridate:"+Tag5F24_data+"\n" + "PIN0:" + TagPin_data + "\n" + "KSN0:" + Ksn_data)
-//                runOnUiThread {
-//                    tvEmvMsg.setText(strEmvStatus + "\nCardNO:" + Tag5A_data + "\n" + "PIN0:" + TagPin_data + "\n" + "KSN0:" + Ksn_data)
-//
-//                    //  tvEmvMsg.setText("\n\nPinbypass:" + bypass);
-//                    //   tvEmvMsg.setText("EMV Test complete");
-//                }
                 Log.e("EMV PinData", "-TagPin_data=----$TagPin_data")
                 EMVCOHelper.EmvFinal()
+
+
+                val itn =Intent(this,MenuActivity::class.java).apply{
+                    putExtra("CardNO",Tag5A_data)
+                    putExtra("EXD",Tag5F24_data)
+                }
+                startActivity(itn)
             }
         }
 
     }
+
+
     private fun requestPermission() {
         //Check if there is write permission
         val checkCallPhonePermission: Int = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)

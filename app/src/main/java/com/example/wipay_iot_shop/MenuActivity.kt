@@ -52,6 +52,11 @@ class MenuActivity : AppCompatActivity() {
             }
             startActivity(itn)
         }
+        listImg.setOnClickListener {
+            startActivity(Intent(this,SettingActivity::class.java))
+        }
+
+
 
 
 
