@@ -59,10 +59,10 @@ class TransactionActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_transaction)
 
-        setDialogS("null","Comfirm your order.")
+//        setDialogS("null","Comfirm your order.")
 
-        intent.apply {
-//            processing = getBooleanExtra("processing",false)
+            intent.apply {
+//          processing = getBooleanExtra("processing",false)
             totalAmount = getIntExtra("totalAmount",145)
             cardNO = getStringExtra("cardNO").toString()
             cardEXD = getStringExtra("cardEXD").toString()
@@ -77,62 +77,24 @@ class TransactionActivity : AppCompatActivity() {
         super.onStart()
         EventBus.getDefault().register(this)
 
-//        Thread{
-//            accessDatabase()
-//            readStan = saleDAO?.getSale()?.STAN
-//            Log.i("log_tag","readSTAN : " + readStan)
-//        }.start()
-//            Log.i("log_tag","readSTAN1 : " + readStan)
-        if(readStan == null) {
-            stan = 1117
-        }
+        EventBus.getDefault().post(MessageEvent(
+            "runDBthread",
+            ""
+        ))
 
     }
 
     override fun onResume() {
         super.onResume()
 
-        if(processing == true) {
+        EventBus.getDefault().post(MessageEvent(
+            "runProcessing",
+            ""
+        ))
 
-            if (reverseFlag) {
-                stuckReverse = true
-
-                Log.i("log_tag", "send reverse packet")
-//                    sendPacket(reversalPacket(stan.toString()))
-                sendPacket(reBuildISOPacket(reReversal.toString()))
-                Log.i("log_tag", "reversal:  " + reReversal.toString())
-                Log.i("log_tag", "reverseFlag:  " + reverseFlag)
-
-            }
-            else
-            {
-                stan = stan?.plus(1)
-                saleMsg = salePacket(stan.toString())
-                Log.i("log_tag", "Current stan: " + stan)
-
-                reversalMsg = reversalPacket(stan.toString())
-                var reverseTrans = ReversalEntity(null,reversalMsg.toString())
-
-                reverseFlag = true
-                Log.i("log_tag", "send sale packet")
-                sendPacket(saleMsg)
-                Log.i("log_tag", "sale: " + saleMsg.toString())
-                Log.i("log_tag", "reverseFlag:  " + reverseFlag)
-                //                Log.i("log_tag", "else" + reverseFlag)
-
-                Thread{
-
-                    accessDatabase()
-
-                    reversalDAO?.insertReversal(reverseTrans)
-                    reReversal = reversalDAO?.getReversal()?.isoMsg
-//                        Log.i("log_tag","reReversal:  " + reReversal.toString() )
-
-                }.start()
-
-            }
-
-        }
+//        if(processing == true) {
+//
+//        }
     }
 
     override fun onStop() {
@@ -150,6 +112,70 @@ class TransactionActivity : AppCompatActivity() {
 
         @Subscribe(threadMode = ThreadMode.MAIN)
     public fun onMessageEvent(event: MessageEvent){
+
+        if(event.type == "runDBthread"){
+            Thread{
+                accessDatabase()
+                readStan = saleDAO?.getSale()?.STAN
+                Log.i("log_tag","readSTAN : " + readStan)
+            }.start()
+
+            if(readStan == null) {
+                stan = 1117
+            }
+        }
+        if(event.type == "runProcessing"){
+            manageProcessing()
+        }
+        else {
+            manageResponse(event)
+        }
+
+
+    }
+
+    fun manageProcessing(){
+        if (reverseFlag) {
+            stuckReverse = true
+
+            Log.i("log_tag", "send reverse packet")
+//                    sendPacket(reversalPacket(stan.toString()))
+            sendPacket(reBuildISOPacket(reReversal.toString()))
+            Log.i("log_tag", "reversal:  " + reReversal.toString())
+            Log.i("log_tag", "reverseFlag:  " + reverseFlag)
+
+        }
+        else
+        {
+            stan = stan?.plus(1)
+            saleMsg = salePacket(stan.toString())
+            Log.i("log_tag", "Current stan: " + stan)
+
+            reversalMsg = reversalPacket(stan.toString())
+            var reverseTrans = ReversalEntity(null,reversalMsg.toString())
+
+            reverseFlag = true
+            Log.i("log_tag", "send sale packet")
+            sendPacket(saleMsg)
+            Log.i("log_tag", "sale: " + saleMsg.toString())
+            Log.i("log_tag", "reverseFlag:  " + reverseFlag)
+            //                Log.i("log_tag", "else" + reverseFlag)
+
+            Thread{
+
+                accessDatabase()
+
+                reversalDAO?.insertReversal(reverseTrans)
+                reReversal = reversalDAO?.getReversal()?.isoMsg
+//                        Log.i("log_tag","reReversal:  " + reReversal.toString() )
+
+            }.start()
+
+        }
+
+    }
+
+    fun manageResponse(event: MessageEvent){
 
         reverseFlag = false
         output1?.setText("Response Message: " + event.message)
@@ -243,7 +269,7 @@ class TransactionActivity : AppCompatActivity() {
 
             Thread{
 
-               accessDatabase()
+                accessDatabase()
 
                 saleDAO?.insertSale(saleApprove)
                 readSale = saleDAO?.getSale()?.isoMsg
@@ -430,17 +456,21 @@ class TransactionActivity : AppCompatActivity() {
         builder.setTitle(title)
         builder.setMessage(msg)
         //builder.setPositiveButton("OK", DialogInterface.OnClickListener(function = x))
-        processing = true
+
         builder.setPositiveButton(getString(R.string.ok),
             DialogInterface.OnClickListener{ dialog, which ->
             Toast.makeText(applicationContext,android.R.string.ok, Toast.LENGTH_LONG).show()
+
+
                 Thread{
                     accessDatabase()
                     readStan = saleDAO?.getSale()?.STAN
                     Log.i("log_tag","readSTAN : " + readStan)
 //                Log.i("log_tag","readSTAN : " + readStan)
 
+
                 }.start()
+
             })
         
             DialogInterface.OnClickListener{ dialog, which ->
