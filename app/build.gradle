@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
+    id 'kotlin-kapt'
 }
 
 android {
@@ -37,7 +38,16 @@ dependencies {
     implementation 'com.google.android.material:material:1.4.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.0'
     implementation files('libs\\zxing-core-3.3.0.jar')
+    implementation 'androidx.room:room-common:2.2.6'
+    implementation 'androidx.room:room-ktx:2.2.6'
+    implementation files('libs/ISO8583-1.0.6-SNAPSHOT.jar')
     testImplementation 'junit:junit:4.+'
+    implementation 'org.greenrobot:eventbus:3.2.0'
+
+    def room_version = "2.3.0"
+
+    // To use Kotlin annotation processing tool (kapt)
+    kapt("androidx.room:room-compiler:$room_version")
 
     implementation files ('../libs/A26Library-debug.aar')
 

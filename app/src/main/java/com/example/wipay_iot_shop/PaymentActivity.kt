@@ -21,6 +21,10 @@ import vpos.keypad.EMVCOHelper
 import java.util.*
 
 class PaymentActivity : AppCompatActivity() ,View.OnClickListener{
+
+    var DB : TransactionActivity? = null
+
+
     lateinit var btn_SelectMag : Button
     lateinit var btn_SelectEMV : Button
     lateinit var btn_QR : Button
@@ -32,7 +36,8 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener{
     private var m_bThreadFinished = true
 
     var totalAmount:Int? = null
-
+    var stan: Int? = null
+    var readStan: Int? = null
 
     ///////////////////////EMV Config///////////////////////////////
 
@@ -181,6 +186,8 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener{
 //            WindowManager.LayoutParams.FLAG_FULLSCREEN,
 //            WindowManager.LayoutParams.FLAG_FULLSCREEN
 //        )
+            DB = TransactionActivity()
+
 
             intent.apply {
                 totalAmount = getIntExtra("totalAmount",145)
@@ -430,10 +437,22 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener{
                 EMVCOHelper.EmvFinal()
 
 
+                Thread{
+                    DB?.accessDatabase()
+                    readStan = DB?.saleDAO?.getSale()?.STAN
+                }.start()
+//                Log.i("log_tag","readSTAN : " + readStan)
+                if(readStan == null){
+                    stan = 1117
+                }
+
+
                 val itn =Intent(this,TransactionActivity::class.java).apply{
+                    putExtra("Processing",true)
                     putExtra("cardNO",Tag5A_data)
                     putExtra("EXD",Tag5F24_data)
                     putExtra("totalAmount",totalAmount)
+                    putExtra("STAN",stan)
                 }
                 startActivity(itn)
             }
