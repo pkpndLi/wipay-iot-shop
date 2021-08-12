@@ -71,21 +71,6 @@ class TransactionActivity : AppCompatActivity() {
 
         Log.i("logtag","processing: "+processing)
 
-
-
-    }
-
-    override fun onStart() {
-        super.onStart()
-        EventBus.getDefault().register(this)
-
-//        Thread{
-//            accessDatabase()
-//            readStan = saleDAO?.getSale()?.STAN
-//            Log.i("log_tag","readSTAN : " + readStan)
-//        }.start()
-//            Log.i("log_tag","readSTAN1 : " + readStan)
-
         if(readStan == null) {
             stan = 1117
         }
@@ -129,7 +114,21 @@ class TransactionActivity : AppCompatActivity() {
                 }.start()
 
             }
+
         }
+
+    }
+
+    override fun onStart() {
+        super.onStart()
+        EventBus.getDefault().register(this)
+
+//        Thread{
+//            accessDatabase()
+//            readStan = saleDAO?.getSale()?.STAN
+//            Log.i("log_tag","readSTAN : " + readStan)
+//        }.start()
+//            Log.i("log_tag","readSTAN1 : " + readStan)
     }
 
     override fun onStop() {
