@@ -13,7 +13,7 @@ import android.widget.TextView
 
  class InfoActivity : AppCompatActivity() {
 
-     var db : TransactionActivity? = null
+     var main : MainActivity? = null
 
      var menu:String? = null
      var amount:Int? = null
@@ -33,7 +33,7 @@ import android.widget.TextView
         val sumAmount = findViewById<TextView>(R.id.sumAmount)
         val inputQuantity = findViewById<EditText>(R.id.inputQuantity)
 
-        db = TransactionActivity()
+        main = MainActivity()
 
         cupImg.setImageDrawable(getImage(this, "coffee96"))
 
@@ -62,8 +62,8 @@ import android.widget.TextView
             totalAmount = quantity!! * amount!!
 
            Thread{
-               db!!.accessDatabase()
-               readStan = db!!.saleDAO?.getSale()?.STAN
+               main!!.accessDatabase()
+               readStan = main!!.saleDAO?.getSale()?.STAN
                Log.i("log_tag","readSTAN : " + readStan)
            }.start()
 

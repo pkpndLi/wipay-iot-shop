@@ -8,8 +8,17 @@ import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
+import com.example.testpos.database.transaction.AppDatabase
+import com.example.testpos.database.transaction.ReversalDao
+import com.example.testpos.database.transaction.SaleDao
 
 class MainActivity : AppCompatActivity() {
+
+    var appDatabase : AppDatabase? = null
+    var reversalDAO : ReversalDao? = null
+    var saleDAO : SaleDao? = null
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -30,4 +39,13 @@ class MainActivity : AppCompatActivity() {
             Log.i("test","email :"+email+"\t password :"+password)
         }
     }
+
+    fun accessDatabase(){
+
+        appDatabase = AppDatabase.getAppDatabase(this)
+        reversalDAO = appDatabase?.reversalDao()
+        saleDAO = appDatabase?.saleDao()
+
+    }
+
 }
