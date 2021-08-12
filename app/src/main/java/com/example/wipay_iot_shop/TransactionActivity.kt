@@ -1,5 +1,7 @@
 package com.example.wipay_iot_shop
 
+import android.content.DialogInterface
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -134,7 +136,7 @@ class TransactionActivity : AppCompatActivity() {
         reverseFlag = false
         output1?.setText("Response Message: " + event.message)
         Log.i("log_tag", "Response Message:" + event.message)
-        responseCode = responseCodeUnpack(event.message)
+        responseCode = codeUnpack(event.message,39)
         output2?.setText("response code: " + responseCode)
         Log.i("log_tag", "response code:"+ responseCode)
 
@@ -144,28 +146,67 @@ class TransactionActivity : AppCompatActivity() {
 
                 Log.i("log_tag", "Reversal Approve.")
 //                reversalApprove()
-                setDialog("Cenceling Success.","Successfully canceled the transaction.")
+//                setDialog("Cenceling Success.","Successfully canceled the transaction.")
+
+                var reStan = codeUnpack(reReversal.toString(),11)
+                var reversalApprove = SaleEntity(null,reReversal.toString(), reStan!!.toInt())
+
+                Thread{
+
+                    accessDatabase()
+                    saleDAO?.insertSale(reversalApprove)
+                    readSale = saleDAO?.getSale()?.isoMsg
+                    readStan = saleDAO?.getSale()?.STAN
+                    Log.i("log_tag","saveReversalApprove :  " + readSale)
+                    Log.i("log_tag","saveSTAN : " + readStan)
+
+                }.start()
+
                 stuckReverse = false
+
+                stan = stan?.plus(1)
+                saleMsg = salePacket(stan.toString())
+                Log.i("log_tag", "Current stan: " + stan)
+
+                reversalMsg = reversalPacket(stan.toString())
+                var reverseTrans = ReversalEntity(null,reversalMsg.toString())
+
+                reverseFlag = true
+                Log.i("log_tag", "send sale packet")
+                sendPacket(saleMsg)
+                Log.i("log_tag", "sale: " + saleMsg.toString())
+                Log.i("log_tag", "reverseFlag:  " + reverseFlag)
+                //                Log.i("log_tag", "else" + reverseFlag)
+
+                //reverse สำหรับ transaction ปัจจุบัน
+                Thread{
+
+                    accessDatabase()
+                    reversalDAO?.insertReversal(reverseTrans)
+                    reReversal = reversalDAO?.getReversal()?.isoMsg
+//                        Log.i("log_tag","reReversal:  " + reReversal.toString() )
+
+                }.start()
 
             }else{
                 Log.i("log_tag", "Transaction Approve.")
 //                transactionApprove()
                 setDialog(null,"Transaction complete.")
+
+                var saleApprove = SaleEntity(null,saleMsg.toString(),stan)
+
+                Thread{
+
+                    accessDatabase()
+
+                    saleDAO?.insertSale(saleApprove)
+                    readSale = saleDAO?.getSale()?.isoMsg
+                    readStan = saleDAO?.getSale()?.STAN
+                    Log.i("log_tag","saveTransaction :  " + readSale)
+                    Log.i("log_tag","saveSTAN : " + readStan)
+
+                }.start()
             }
-
-            var saleApprove = SaleEntity(null,saleMsg.toString(),stan)
-
-            Thread{
-
-                accessDatabase()
-
-                saleDAO?.insertSale(saleApprove)
-                readSale = saleDAO?.getSale()?.isoMsg
-                readStan = saleDAO?.getSale()?.STAN
-                Log.i("log_tag","saveTransaction :  " + readSale)
-                Log.i("log_tag","saveSTAN : " + readStan)
-
-            }.start()
 
         }else{
 
@@ -192,10 +233,8 @@ class TransactionActivity : AppCompatActivity() {
                 Log.i("log_tag","saveTransaction :  " + readSale)
                 Log.i("log_tag","saveSTAN : " + readStan)
 
-
             }.start()
 
-//
         }
 
         Log.i("log_tag", "reverseFlag:  " + reverseFlag)
@@ -268,33 +307,14 @@ class TransactionActivity : AppCompatActivity() {
         builder.setMessage("Error code: " + code +",  ${msg}")
         //builder.setPositiveButton("OK", DialogInterface.OnClickListener(function = x))
 
-        builder.setPositiveButton(android.R.string.ok) { dialog, which ->
-            Toast.makeText(applicationContext,
-                android.R.string.ok, Toast.LENGTH_LONG).show()
-        }
+        builder.setPositiveButton(getString(R.string.ok),DialogInterface.OnClickListener{ dialog, which ->
+            Toast.makeText(applicationContext,android.R.string.ok, Toast.LENGTH_LONG).show()
+            startActivity(Intent(this,MenuActivity::class.java))
+        })
+
         val dialog = builder.create()
         dialog.show()
     }
-
-    private fun hexStringToByteArray(s: String): ByteArray? {
-        val b = ByteArray(s.length / 2)
-        for (i in b.indices) {
-            val index = i * 2
-            val v = s.substring(index, index + 2).toInt(16)
-            b[i] = v.toByte()
-        }
-        return b
-    }
-
-    private fun bytesArrayToHexString(b1: ByteArray): String? {
-        val strBuilder = StringBuilder()
-        for (`val` in b1) {
-            strBuilder.append(String.format("%02x", `val` and 0xff.toByte()))
-        }
-        return strBuilder.toString()
-    }
-
-
 
     @Throws(ISOException::class, ISOClientException::class, IOException::class)
     fun salePacket(STAN: String): ISOMessage? {
@@ -360,11 +380,11 @@ class TransactionActivity : AppCompatActivity() {
         return isoMessage
     }
 
-    fun responseCodeUnpack(response: String): String? {
+    fun codeUnpack(response: String,field: Int): String? {
         val isoMessageUnpacket: ISOMessage = ISOMessageBuilder.Unpacker()
             .setMessage(response)
             .build()
-        val responseCode: String? = bytesArrayToHexString(isoMessageUnpacket.getField(39))
+        val responseCode: String? = bytesArrayToHexString(isoMessageUnpacket.getField(field))
         return responseCode
     }
 
@@ -375,13 +395,32 @@ class TransactionActivity : AppCompatActivity() {
         builder.setMessage(msg)
         //builder.setPositiveButton("OK", DialogInterface.OnClickListener(function = x))
 
-        builder.setPositiveButton(android.R.string.ok) { dialog, which ->
-            Toast.makeText(applicationContext,
-                android.R.string.ok, Toast.LENGTH_LONG).show()
-        }
+        builder.setPositiveButton(getString(R.string.ok),
+            DialogInterface.OnClickListener{ dialog, which ->
+            Toast.makeText(applicationContext,android.R.string.ok, Toast.LENGTH_LONG).show()
+            startActivity(Intent(this,MenuActivity::class.java))
+        })
+
         val dialog = builder.create()
         dialog.show()
     }
 
+    private fun hexStringToByteArray(s: String): ByteArray? {
+        val b = ByteArray(s.length / 2)
+        for (i in b.indices) {
+            val index = i * 2
+            val v = s.substring(index, index + 2).toInt(16)
+            b[i] = v.toByte()
+        }
+        return b
+    }
+
+    private fun bytesArrayToHexString(b1: ByteArray): String? {
+        val strBuilder = StringBuilder()
+        for (`val` in b1) {
+            strBuilder.append(String.format("%02x", `val` and 0xff.toByte()))
+        }
+        return strBuilder.toString()
+    }
 
 }
