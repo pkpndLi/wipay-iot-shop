@@ -51,8 +51,8 @@ class TransactionActivity : AppCompatActivity() {
     var readStan: Int? = null
     var stuckReverse = false
 
-    private val HOST = "192.168.43.195"
-    var PORT = 5000
+    private val HOST = "192.168.1.20"
+    var PORT = 3000
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,10 +63,23 @@ class TransactionActivity : AppCompatActivity() {
             totalAmount = getIntExtra("totalAmount",145)
             cardNO = getStringExtra("cardNO").toString()
             cardEXD = getStringExtra("cardEXD").toString()
-            stan = getIntExtra("STAN",1)
         }
 
+        Log.i("logtag",""+processing)
+
+
         if(processing == true) {
+
+            Thread{
+                accessDatabase()
+                readStan = saleDAO?.getSale()?.STAN
+                Log.i("log_tag","readSTAN : " + readStan)
+            }.start()
+                Log.i("log_tag","readSTAN1 : " + readStan)
+
+            if(readStan == null) {
+                stan = 1117
+            }
 
             if (reverseFlag) {
                 stuckReverse = true
