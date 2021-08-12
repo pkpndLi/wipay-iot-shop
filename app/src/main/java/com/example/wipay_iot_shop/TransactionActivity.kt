@@ -65,24 +65,30 @@ class TransactionActivity : AppCompatActivity() {
             cardEXD = getStringExtra("cardEXD").toString()
         }
 
-        Log.i("logtag",""+processing)
+        Log.i("logtag","processing: "+processing)
 
+    }
+
+    override fun onStart() {
+        super.onStart()
+        EventBus.getDefault().register(this)
+
+        Thread{
+            accessDatabase()
+            readStan = saleDAO?.getSale()?.STAN
+            Log.i("log_tag","readSTAN : " + readStan)
+        }.start()
+            Log.i("log_tag","readSTAN1 : " + readStan)
+
+        if(readStan == null) {
+            stan = 1117
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
 
         if(processing == true) {
-
-<<<<<<< HEAD
-=======
-            Thread{
-                accessDatabase()
-                readStan = saleDAO?.getSale()?.STAN
-                Log.i("log_tag","readSTAN : " + readStan)
-            }.start()
-                Log.i("log_tag","readSTAN1 : " + readStan)
-
-            if(readStan == null) {
-                stan = 1117
-            }
->>>>>>> 52589da06209889cb7e4b3132e9c1b285a549fb3
 
             if (reverseFlag) {
                 stuckReverse = true
@@ -94,8 +100,8 @@ class TransactionActivity : AppCompatActivity() {
                 Log.i("log_tag", "reverseFlag:  " + reverseFlag)
 
             }
-            else{
-
+            else
+            {
                 stan = stan?.plus(1)
                 saleMsg = salePacket(stan.toString())
                 Log.i("log_tag", "Current stan: " + stan)
@@ -124,8 +130,13 @@ class TransactionActivity : AppCompatActivity() {
 
         }
 
-
     }
+
+    override fun onStop() {
+        super.onStop()
+        EventBus.getDefault().unregister(this)
+    }
+
 
     fun accessDatabase(){
 
@@ -134,17 +145,6 @@ class TransactionActivity : AppCompatActivity() {
         saleDAO = appDatabase?.saleDao()
 
     }
-
-    override fun onStart() {
-        super.onStart()
-        EventBus.getDefault().register(this)
-    }
-
-    override fun onStop() {
-        super.onStop()
-        EventBus.getDefault().unregister(this)
-    }
-
 
         @Subscribe(threadMode = ThreadMode.MAIN)
     public fun onMessageEvent(event: MessageEvent){
