@@ -35,8 +35,8 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener{
     private var m_bThreadFinished = true
 
     var totalAmount:Int? = null
-    var stan: Int? = null
-    var readStan: Int? = null
+//    var stan: Int? = null
+//    var readStan: Int? = null
 
 
 

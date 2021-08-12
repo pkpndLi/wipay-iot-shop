@@ -57,6 +57,13 @@ class TransactionActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_transaction)
+        Thread{
+            accessDatabase()
+            readStan = saleDAO?.getSale()?.STAN
+            Log.i("log_tag","readSTAN : " + readStan)
+            Log.i("log_tag","3")
+        }.start()
+
 
         intent.apply {
             processing = getBooleanExtra("processing",false)
@@ -72,22 +79,18 @@ class TransactionActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
         EventBus.getDefault().register(this)
+        Log.i("log_tag","1")
 
-        Thread{
-            accessDatabase()
-            readStan = saleDAO?.getSale()?.STAN
-            Log.i("log_tag","readSTAN : " + readStan)
-        }.start()
-            Log.i("log_tag","readSTAN1 : " + readStan)
 
         if(readStan == null) {
             stan = 1117
         }
+        Log.i("log_tag","readSTAN1 : " + readStan)
     }
 
     override fun onResume() {
         super.onResume()
-
+        Log.i("log_tag","2")
         if(processing == true) {
 
             if (reverseFlag) {
