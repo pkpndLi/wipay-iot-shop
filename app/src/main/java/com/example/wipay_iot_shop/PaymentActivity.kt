@@ -37,6 +37,11 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener{
     var stan: Int? = null
     var readStan: Int? = null
 
+
+
+
+
+
     ///////////////////////EMV Config///////////////////////////////
 
     var MY_PERMISSIONS_STORAGE = arrayOf(
