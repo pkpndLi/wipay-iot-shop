@@ -29,6 +29,7 @@ import kotlin.experimental.and
 
 class TransactionActivity : AppCompatActivity() {
 
+
     var appDatabase : AppDatabase? = null
     var reversalDAO : ReversalDao? = null
     var saleDAO : SaleDao? = null
@@ -58,28 +59,20 @@ class TransactionActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_transaction)
 
-//        setDialogS("null","Comfirm your order.")
+        setDialogS("null","Comfirm your order.")
 
         intent.apply {
-            processing = getBooleanExtra("processing",false)
+//            processing = getBooleanExtra("processing",false)
             totalAmount = getIntExtra("totalAmount",145)
             cardNO = getStringExtra("cardNO").toString()
             cardEXD = getStringExtra("cardEXD").toString()
 
         }
 
-        val t1 = Thread(Runnable{
-            accessDatabase()
-            readStan = saleDAO?.getSale()?.STAN
-            Log.i("log_tag","readSTAN : " + readStan)
-        })
-        t1.priority = 1
+
 
         Log.i("logtag","processing: "+processing)
 
-        if(readStan == null) {
-            stan = 1117
-        }
 
     }
 
@@ -93,6 +86,14 @@ class TransactionActivity : AppCompatActivity() {
 //            Log.i("log_tag","readSTAN : " + readStan)
 //        }.start()
 //            Log.i("log_tag","readSTAN1 : " + readStan)
+        if(readStan == null) {
+            stan = 1117
+        }
+        processing = true
+    }
+
+    override fun onResume() {
+        super.onResume()
 
         if(processing == true) {
 
