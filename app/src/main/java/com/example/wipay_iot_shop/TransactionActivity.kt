@@ -69,10 +69,7 @@ class TransactionActivity : AppCompatActivity() {
 
         }
 
-
-
-        Log.i("logtag","processing: "+processing)
-
+        Log.i("log_tag","processing: "+processing)
 
     }
 
@@ -89,7 +86,7 @@ class TransactionActivity : AppCompatActivity() {
         if(readStan == null) {
             stan = 1117
         }
-        processing = true
+
     }
 
     override fun onResume() {
@@ -414,6 +411,7 @@ class TransactionActivity : AppCompatActivity() {
 
         builder.setTitle(title)
         builder.setMessage(msg)
+        processing = true
         //builder.setPositiveButton("OK", DialogInterface.OnClickListener(function = x))
 
         builder.setPositiveButton(getString(R.string.ok),
