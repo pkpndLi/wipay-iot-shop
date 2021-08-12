@@ -68,6 +68,7 @@ class TransactionActivity : AppCompatActivity() {
 
         if(processing == true) {
 
+
             if (reverseFlag) {
                 stuckReverse = true
 

@@ -22,7 +22,7 @@ import java.util.*
 
 class PaymentActivity : AppCompatActivity() ,View.OnClickListener{
 
-    var DB : TransactionActivity? = null
+
 
 
     lateinit var btn_SelectMag : Button
@@ -186,7 +186,6 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener{
 //            WindowManager.LayoutParams.FLAG_FULLSCREEN,
 //            WindowManager.LayoutParams.FLAG_FULLSCREEN
 //        )
-            DB = TransactionActivity()
 
 
             intent.apply {
@@ -437,14 +436,6 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener{
                 EMVCOHelper.EmvFinal()
 
 
-                Thread{
-                    DB?.accessDatabase()
-                    readStan = DB?.saleDAO?.getSale()?.STAN
-                }.start()
-//                Log.i("log_tag","readSTAN : " + readStan)
-                if(readStan == null){
-                    stan = 1117
-                }
 
 
                 val itn =Intent(this,TransactionActivity::class.java).apply{
@@ -452,7 +443,7 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener{
                     putExtra("cardNO",Tag5A_data)
                     putExtra("EXD",Tag5F24_data)
                     putExtra("totalAmount",totalAmount)
-                    putExtra("STAN",stan)
+
                 }
                 startActivity(itn)
             }
