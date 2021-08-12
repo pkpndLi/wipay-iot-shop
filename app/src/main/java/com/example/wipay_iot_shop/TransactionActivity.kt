@@ -29,9 +29,7 @@ import kotlin.experimental.and
 
 class TransactionActivity : AppCompatActivity() {
 
-    var appDatabase : AppDatabase? = null
-    var reversalDAO : ReversalDao? = null
-    var saleDAO : SaleDao? = null
+    var main : MainActivity? = null
 
     var processing = false
     var totalAmount:Int? = null
@@ -64,6 +62,8 @@ class TransactionActivity : AppCompatActivity() {
             Log.i("log_tag","3")
         }.start()
 
+
+        main = MainActivity()
 
         intent.apply {
             processing = getBooleanExtra("processing",false)
@@ -132,10 +132,10 @@ class TransactionActivity : AppCompatActivity() {
 
                 Thread{
 
-                    accessDatabase()
+                    main!!.accessDatabase()
 
-                    reversalDAO?.insertReversal(reverseTrans)
-                    reReversal = reversalDAO?.getReversal()?.isoMsg
+                    main!!.reversalDAO?.insertReversal(reverseTrans)
+                    reReversal = main!!.reversalDAO?.getReversal()?.isoMsg
 //                        Log.i("log_tag","reReversal:  " + reReversal.toString() )
 
                 }.start()
@@ -149,15 +149,6 @@ class TransactionActivity : AppCompatActivity() {
     override fun onStop() {
         super.onStop()
         EventBus.getDefault().unregister(this)
-    }
-
-
-    fun accessDatabase(){
-
-        appDatabase = AppDatabase.getAppDatabase(this)
-        reversalDAO = appDatabase?.reversalDao()
-        saleDAO = appDatabase?.saleDao()
-
     }
 
         @Subscribe(threadMode = ThreadMode.MAIN)
@@ -183,10 +174,10 @@ class TransactionActivity : AppCompatActivity() {
 
                 Thread{
 
-                    accessDatabase()
-                    saleDAO?.insertSale(reversalApprove)
-                    readSale = saleDAO?.getSale()?.isoMsg
-                    readStan = saleDAO?.getSale()?.STAN
+                    main!!.accessDatabase()
+                    main!!.saleDAO?.insertSale(reversalApprove)
+                    readSale = main!!.saleDAO?.getSale()?.isoMsg
+                    readStan = main!!.saleDAO?.getSale()?.STAN
                     Log.i("log_tag","saveReversalApprove :  " + readSale)
                     Log.i("log_tag","saveSTAN : " + readStan)
 
@@ -211,9 +202,9 @@ class TransactionActivity : AppCompatActivity() {
                 //reverse สำหรับ transaction ปัจจุบัน
                 Thread{
 
-                    accessDatabase()
-                    reversalDAO?.insertReversal(reverseTrans)
-                    reReversal = reversalDAO?.getReversal()?.isoMsg
+                    main!!.accessDatabase()
+                    main!!.reversalDAO?.insertReversal(reverseTrans)
+                    reReversal = main!!.reversalDAO?.getReversal()?.isoMsg
 //                        Log.i("log_tag","reReversal:  " + reReversal.toString() )
 
                 }.start()
@@ -227,11 +218,11 @@ class TransactionActivity : AppCompatActivity() {
 
                 Thread{
 
-                    accessDatabase()
+                    main!!.accessDatabase()
 
-                    saleDAO?.insertSale(saleApprove)
-                    readSale = saleDAO?.getSale()?.isoMsg
-                    readStan = saleDAO?.getSale()?.STAN
+                    main!!.saleDAO?.insertSale(saleApprove)
+                    readSale = main!!.saleDAO?.getSale()?.isoMsg
+                    readStan = main!!.saleDAO?.getSale()?.STAN
                     Log.i("log_tag","saveTransaction :  " + readSale)
                     Log.i("log_tag","saveSTAN : " + readStan)
 
@@ -255,11 +246,11 @@ class TransactionActivity : AppCompatActivity() {
 
             Thread{
 
-                accessDatabase()
+                main!!.accessDatabase()
 
-                saleDAO?.insertSale(saleApprove)
-                readSale = saleDAO?.getSale()?.isoMsg
-                readStan = saleDAO?.getSale()?.STAN
+                main!!.saleDAO?.insertSale(saleApprove)
+                readSale = main!!.saleDAO?.getSale()?.isoMsg
+                readStan = main!!.saleDAO?.getSale()?.STAN
                 Log.i("log_tag","saveTransaction :  " + readSale)
                 Log.i("log_tag","saveSTAN : " + readStan)
 
