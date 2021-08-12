@@ -23,6 +23,7 @@ import java.util.*
 
 class PaymentActivity : AppCompatActivity() ,View.OnClickListener{
 
+
     lateinit var btn_SelectMag : Button
     lateinit var btn_SelectEMV : Button
     lateinit var btn_QR : Button
@@ -440,6 +441,10 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener{
                 Log.e("EMV PinData", "-TagPin_data=----$TagPin_data")
                 EMVCOHelper.EmvFinal()
 
+
+
+
+
                 var newTag5F24 = ""
                 val EXD:CharArray = Tag5F24_data.toCharArray()
                 for (i in 0 until 4){
@@ -454,6 +459,7 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener{
 //                if(readStan == null){
 //                    stan = 1117
 //                }
+
 
                 val itn =Intent(this,TransactionActivity::class.java).apply{
                     putExtra("processing",true)
