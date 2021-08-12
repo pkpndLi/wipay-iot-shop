@@ -29,7 +29,9 @@ import kotlin.experimental.and
 
 class TransactionActivity : AppCompatActivity() {
 
-    var main : MainActivity? = null
+    var appDatabase : AppDatabase? = null
+    var reversalDAO : ReversalDao? = null
+    var saleDAO : SaleDao? = null
 
     var processing = false
     var totalAmount:Int? = null
@@ -56,7 +58,6 @@ class TransactionActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_transaction)
 
-        main = MainActivity()
 
         intent.apply {
             processing = getBooleanExtra("processing",false)
@@ -74,20 +75,16 @@ class TransactionActivity : AppCompatActivity() {
         super.onStart()
         EventBus.getDefault().register(this)
 
-//        Thread{
-//            accessDatabase()
-//            readStan = saleDAO?.getSale()?.STAN
-//            Log.i("log_tag","readSTAN : " + readStan)
-//        }.start()
+        Thread{
+            accessDatabase()
+            readStan = saleDAO?.getSale()?.STAN
+            Log.i("log_tag","readSTAN : " + readStan)
+        }.start()
             Log.i("log_tag","readSTAN1 : " + readStan)
 
-//        if(readStan == null) {
-//            stan = 1117
-//        }
-    }
-
-    override fun onResume() {
-        super.onResume()
+        if(readStan == null) {
+            stan = 1117
+        }
 
         if(processing == true) {
 
@@ -119,23 +116,29 @@ class TransactionActivity : AppCompatActivity() {
 
                 Thread{
 
-                    main!!.accessDatabase()
+                    accessDatabase()
 
-                    main!!.reversalDAO?.insertReversal(reverseTrans)
-                    reReversal = main!!.reversalDAO?.getReversal()?.isoMsg
+                    reversalDAO?.insertReversal(reverseTrans)
+                    reReversal = reversalDAO?.getReversal()?.isoMsg
 //                        Log.i("log_tag","reReversal:  " + reReversal.toString() )
 
                 }.start()
 
             }
-
         }
-
     }
 
     override fun onStop() {
         super.onStop()
         EventBus.getDefault().unregister(this)
+    }
+
+    fun accessDatabase(){
+
+        appDatabase = AppDatabase.getAppDatabase(this)
+        reversalDAO = appDatabase?.reversalDao()
+        saleDAO = appDatabase?.saleDao()
+
     }
 
         @Subscribe(threadMode = ThreadMode.MAIN)
@@ -161,10 +164,10 @@ class TransactionActivity : AppCompatActivity() {
 
                 Thread{
 
-                    main!!.accessDatabase()
-                    main!!.saleDAO?.insertSale(reversalApprove)
-                    readSale = main!!.saleDAO?.getSale()?.isoMsg
-                    readStan = main!!.saleDAO?.getSale()?.STAN
+                    accessDatabase()
+                    saleDAO?.insertSale(reversalApprove)
+                    readSale = saleDAO?.getSale()?.isoMsg
+                    readStan = saleDAO?.getSale()?.STAN
                     Log.i("log_tag","saveReversalApprove :  " + readSale)
                     Log.i("log_tag","saveSTAN : " + readStan)
 
@@ -189,9 +192,9 @@ class TransactionActivity : AppCompatActivity() {
                 //reverse สำหรับ transaction ปัจจุบัน
                 Thread{
 
-                    main!!.accessDatabase()
-                    main!!.reversalDAO?.insertReversal(reverseTrans)
-                    reReversal = main!!.reversalDAO?.getReversal()?.isoMsg
+                    accessDatabase()
+                    reversalDAO?.insertReversal(reverseTrans)
+                    reReversal = reversalDAO?.getReversal()?.isoMsg
 //                        Log.i("log_tag","reReversal:  " + reReversal.toString() )
 
                 }.start()
@@ -205,11 +208,11 @@ class TransactionActivity : AppCompatActivity() {
 
                 Thread{
 
-                    main!!.accessDatabase()
+                    accessDatabase()
 
-                    main!!.saleDAO?.insertSale(saleApprove)
-                    readSale = main!!.saleDAO?.getSale()?.isoMsg
-                    readStan = main!!.saleDAO?.getSale()?.STAN
+                    saleDAO?.insertSale(saleApprove)
+                    readSale = saleDAO?.getSale()?.isoMsg
+                    readStan = saleDAO?.getSale()?.STAN
                     Log.i("log_tag","saveTransaction :  " + readSale)
                     Log.i("log_tag","saveSTAN : " + readStan)
 
@@ -233,11 +236,11 @@ class TransactionActivity : AppCompatActivity() {
 
             Thread{
 
-                main!!.accessDatabase()
+               accessDatabase()
 
-                main!!.saleDAO?.insertSale(saleApprove)
-                readSale = main!!.saleDAO?.getSale()?.isoMsg
-                readStan = main!!.saleDAO?.getSale()?.STAN
+                saleDAO?.insertSale(saleApprove)
+                readSale = saleDAO?.getSale()?.isoMsg
+                readStan = saleDAO?.getSale()?.STAN
                 Log.i("log_tag","saveTransaction :  " + readSale)
                 Log.i("log_tag","saveSTAN : " + readStan)
 

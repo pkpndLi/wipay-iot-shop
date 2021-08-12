@@ -57,9 +57,6 @@ class MenuActivity : AppCompatActivity() {
         }
 
 
-
-
-
     }
 
     fun getImage(context: Context, name: String?): Drawable? {

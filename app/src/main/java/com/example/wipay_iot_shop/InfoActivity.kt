@@ -13,7 +13,6 @@ import android.widget.TextView
 
  class InfoActivity : AppCompatActivity() {
 
-     var main : MainActivity? = null
 
      var menu:String? = null
      var amount:Int? = null
@@ -32,8 +31,6 @@ import android.widget.TextView
         val payBtn = findViewById<Button>(R.id.payBtn)
         val sumAmount = findViewById<TextView>(R.id.sumAmount)
         val inputQuantity = findViewById<EditText>(R.id.inputQuantity)
-
-        main = MainActivity()
 
         cupImg.setImageDrawable(getImage(this, "coffee96"))
 
@@ -61,11 +58,6 @@ import android.widget.TextView
             quantity = inputQuantity.text.toString().toInt()
             totalAmount = quantity!! * amount!!
 
-           Thread{
-               main!!.accessDatabase()
-               readStan = main!!.saleDAO?.getSale()?.STAN
-               Log.i("log_tag","readSTAN : " + readStan)
-           }.start()
 
             runOnUiThread {
                 sumAmount.setText("${totalAmount}B")
@@ -77,7 +69,7 @@ import android.widget.TextView
 
             val itn = Intent(this,PaymentActivity::class.java).apply{
                 putExtra("totalAmount",totalAmount)
-                putExtra("readStan",readStan)
+
             }
             startActivity(itn)
 

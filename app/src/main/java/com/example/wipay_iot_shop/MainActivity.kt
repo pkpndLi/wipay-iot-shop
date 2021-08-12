@@ -14,10 +14,6 @@ import com.example.testpos.database.transaction.SaleDao
 
 class MainActivity : AppCompatActivity() {
 
-    var appDatabase : AppDatabase? = null
-    var reversalDAO : ReversalDao? = null
-    var saleDAO : SaleDao? = null
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,12 +36,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun accessDatabase(){
 
-        appDatabase = AppDatabase.getAppDatabase(this)
-        reversalDAO = appDatabase?.reversalDao()
-        saleDAO = appDatabase?.saleDao()
-
-    }
 
 }
