@@ -1,6 +1,5 @@
 package com.example.wipay_iot_shop
 
-import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -15,19 +14,10 @@ import com.example.testpos.database.transaction.SaleDao
 
 class MainActivity : AppCompatActivity() {
 
-    var appDatabase : AppDatabase? = null
-    var reversalDAO : ReversalDao? = null
-    var saleDAO : SaleDao? = null
-
-    var context : Context // before onCreate in MainActivity
-
-      // in onCreate in MainActivity
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-        context = getApplicationContext();
 
         val btn_SignIn = findViewById(com.example.wipay_iot_shop.R.id.btn_SignIn) as Button
         val et_Email = findViewById<EditText>(R.id.et_Email)
@@ -46,13 +36,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun accessDatabase(){
 
-        appDatabase = AppDatabase.getAppDatabase(this)
-        reversalDAO = appDatabase?.reversalDao()
-        saleDAO = appDatabase?.saleDao()
-
-
-    }
 
 }
