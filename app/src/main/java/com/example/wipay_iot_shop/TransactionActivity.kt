@@ -411,7 +411,7 @@ class TransactionActivity : AppCompatActivity() {
 
         builder.setTitle(title)
         builder.setMessage(msg)
-        processing = true
+
         //builder.setPositiveButton("OK", DialogInterface.OnClickListener(function = x))
 
         builder.setPositiveButton(getString(R.string.ok),
@@ -430,7 +430,7 @@ class TransactionActivity : AppCompatActivity() {
         builder.setTitle(title)
         builder.setMessage(msg)
         //builder.setPositiveButton("OK", DialogInterface.OnClickListener(function = x))
-
+        processing = true
         builder.setPositiveButton(getString(R.string.ok),
             DialogInterface.OnClickListener{ dialog, which ->
             Toast.makeText(applicationContext,android.R.string.ok, Toast.LENGTH_LONG).show()
