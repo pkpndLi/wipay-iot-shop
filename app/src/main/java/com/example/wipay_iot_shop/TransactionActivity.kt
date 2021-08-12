@@ -70,6 +70,7 @@ class TransactionActivity : AppCompatActivity() {
             totalAmount = getIntExtra("totalAmount",145)
             cardNO = getStringExtra("cardNO").toString()
             cardEXD = getStringExtra("cardEXD").toString()
+            readStan = getIntExtra("readStan",117)
         }
 
         Log.i("logtag","processing: "+processing)
@@ -82,10 +83,20 @@ class TransactionActivity : AppCompatActivity() {
         Log.i("log_tag","1")
 
 
-        if(readStan == null) {
-            stan = 1117
-        }
-        Log.i("log_tag","readSTAN1 : " + readStan)
+//        if(readStan == null) {
+//            stan = 1117
+//        }
+//        Log.i("log_tag","readSTAN1 : " + readStan)
+//        Thread{
+//            accessDatabase()
+//            readStan = saleDAO?.getSale()?.STAN
+//            Log.i("log_tag","readSTAN : " + readStan)
+//        }.start()
+            Log.i("log_tag","readSTAN1 : " + readStan)
+
+//        if(readStan == null) {
+//            stan = 1117
+//        }
     }
 
     override fun onResume() {

@@ -43,6 +43,9 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener{
 
 
 
+    var readStan: Int? = null
+
+
     ///////////////////////EMV Config///////////////////////////////
 
     var MY_PERMISSIONS_STORAGE = arrayOf(
@@ -194,6 +197,7 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener{
 
             intent.apply {
                 totalAmount = getIntExtra("totalAmount",145)
+                readStan = getIntExtra("readStan",117)
             }
 
             Toast.makeText(applicationContext,"totalAmount" + totalAmount,Toast.LENGTH_LONG).show()
@@ -466,6 +470,7 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener{
                     putExtra("cardNO",Tag5A_data)
                     putExtra("cardEXD",newTag5F24)
                     putExtra("totalAmount",totalAmount)
+                    putExtra("readStan",readStan)
                 }
                 startActivity(itn)
             }
