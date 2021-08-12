@@ -58,11 +58,11 @@ class TransactionActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_transaction)
 
-        setDialogS("null","Comfirm you order.")
+        setDialogS("null","Comfirm your order.")
 
 
         intent.apply {
-            processing = getBooleanExtra("processing",false)
+//            processing = getBooleanExtra("processing",false)
             totalAmount = getIntExtra("totalAmount",145)
             cardNO = getStringExtra("cardNO").toString()
             cardEXD = getStringExtra("cardEXD").toString()
@@ -438,6 +438,8 @@ class TransactionActivity : AppCompatActivity() {
 //                Log.i("log_tag","readSTAN : " + readStan)
 
                 }.start()
+
+                processing = true
             })
         
             DialogInterface.OnClickListener{ dialog, which ->
