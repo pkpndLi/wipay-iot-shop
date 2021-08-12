@@ -58,16 +58,20 @@ class TransactionActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_transaction)
 
+        setDialogS("null","Comfirm you order.")
+
 
         intent.apply {
             processing = getBooleanExtra("processing",false)
             totalAmount = getIntExtra("totalAmount",145)
             cardNO = getStringExtra("cardNO").toString()
             cardEXD = getStringExtra("cardEXD").toString()
-            readStan = getIntExtra("readStan",117)
+
         }
 
         Log.i("logtag","processing: "+processing)
+
+
 
     }
 
@@ -75,12 +79,12 @@ class TransactionActivity : AppCompatActivity() {
         super.onStart()
         EventBus.getDefault().register(this)
 
-        Thread{
-            accessDatabase()
-            readStan = saleDAO?.getSale()?.STAN
-            Log.i("log_tag","readSTAN : " + readStan)
-        }.start()
-            Log.i("log_tag","readSTAN1 : " + readStan)
+//        Thread{
+//            accessDatabase()
+//            readStan = saleDAO?.getSale()?.STAN
+//            Log.i("log_tag","readSTAN : " + readStan)
+//        }.start()
+//            Log.i("log_tag","readSTAN1 : " + readStan)
 
         if(readStan == null) {
             stan = 1117
@@ -411,6 +415,36 @@ class TransactionActivity : AppCompatActivity() {
             Toast.makeText(applicationContext,android.R.string.ok, Toast.LENGTH_LONG).show()
             startActivity(Intent(this,MenuActivity::class.java))
         })
+
+        val dialog = builder.create()
+        dialog.show()
+    }
+
+    fun setDialogS(title: String?,msg: String?) {
+        val builder = AlertDialog.Builder(this)
+
+        builder.setTitle(title)
+        builder.setMessage(msg)
+        //builder.setPositiveButton("OK", DialogInterface.OnClickListener(function = x))
+
+        builder.setPositiveButton(getString(R.string.ok),
+            DialogInterface.OnClickListener{ dialog, which ->
+            Toast.makeText(applicationContext,android.R.string.ok, Toast.LENGTH_LONG).show()
+
+                Thread{
+                    accessDatabase()
+                    readStan = saleDAO?.getSale()?.STAN
+                    Log.i("log_tag","readSTAN : " + readStan)
+//                Log.i("log_tag","readSTAN : " + readStan)
+
+                }.start()
+            })
+        
+            DialogInterface.OnClickListener{ dialog, which ->
+                Toast.makeText(applicationContext,android.R.string.cancel, Toast.LENGTH_LONG).show()
+                startActivity(Intent(this,MenuActivity::class.java))
+
+            }
 
         val dialog = builder.create()
         dialog.show()
