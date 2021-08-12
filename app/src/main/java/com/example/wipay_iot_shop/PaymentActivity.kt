@@ -16,6 +16,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import vpos.apipackage.ByteUtil
 import vpos.apipackage.PosApiHelper
+import vpos.apipackage.Print
 import vpos.apipackage.StringUtil
 import vpos.keypad.EMVCOHelper
 import java.util.*
@@ -436,6 +437,11 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener{
                 Log.e("EMV PinData", "-TagPin_data=----$TagPin_data")
                 EMVCOHelper.EmvFinal()
 
+                var newTag5F24 = ""
+                val EXD:CharArray = Tag5F24_data.toCharArray()
+                for (i in 0 until 4){
+                    newTag5F24 += EXD[i]
+                }
 
                 Thread{
                     DB?.accessDatabase()
@@ -446,11 +452,10 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener{
                     stan = 1117
                 }
 
-
                 val itn =Intent(this,TransactionActivity::class.java).apply{
                     putExtra("Processing",true)
                     putExtra("cardNO",Tag5A_data)
-                    putExtra("EXD",Tag5F24_data)
+                    putExtra("EXD",newTag5F24)
                     putExtra("totalAmount",totalAmount)
                     putExtra("STAN",stan)
                 }
