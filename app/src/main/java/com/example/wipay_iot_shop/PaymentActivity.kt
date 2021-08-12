@@ -35,7 +35,7 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener{
     private var m_bThreadFinished = true
 
     var totalAmount:Int? = null
-    var stan: Int? = null
+//    var stan: Int? = null
     var readStan: Int? = null
 
     ///////////////////////EMV Config///////////////////////////////
@@ -189,6 +189,7 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener{
 
             intent.apply {
                 totalAmount = getIntExtra("totalAmount",145)
+                readStan = getIntExtra("readStan",117)
             }
 
             Toast.makeText(applicationContext,"totalAmount" + totalAmount,Toast.LENGTH_LONG).show()
@@ -461,6 +462,7 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener{
                     putExtra("cardNO",Tag5A_data)
                     putExtra("cardEXD",newTag5F24)
                     putExtra("totalAmount",totalAmount)
+                    putExtra("readStan",readStan)
                 }
                 startActivity(itn)
             }
