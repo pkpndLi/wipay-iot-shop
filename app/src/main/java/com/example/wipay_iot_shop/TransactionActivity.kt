@@ -55,12 +55,12 @@ class TransactionActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_transaction)
-        Thread{
-            accessDatabase()
-            readStan = saleDAO?.getSale()?.STAN
-            Log.i("log_tag","readSTAN : " + readStan)
-            Log.i("log_tag","3")
-        }.start()
+//        Thread{
+//            accessDatabase()
+//            readStan = saleDAO?.getSale()?.STAN
+//            Log.i("log_tag","readSTAN : " + readStan)
+//            Log.i("log_tag","3")
+//        }.start()
 
 
         main = MainActivity()
