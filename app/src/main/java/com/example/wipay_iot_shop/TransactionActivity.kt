@@ -58,22 +58,41 @@ class TransactionActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_transaction)
 
-        setDialogS("null","Comfirm your order.")
-
+//        setDialogS("null","Comfirm your order.")
 
         intent.apply {
-//            processing = getBooleanExtra("processing",false)
+            processing = getBooleanExtra("processing",false)
             totalAmount = getIntExtra("totalAmount",145)
             cardNO = getStringExtra("cardNO").toString()
             cardEXD = getStringExtra("cardEXD").toString()
 
         }
 
+        val t1 = Thread(Runnable{
+            accessDatabase()
+            readStan = saleDAO?.getSale()?.STAN
+            Log.i("log_tag","readSTAN : " + readStan)
+        })
+        t1.priority = 1
+
         Log.i("logtag","processing: "+processing)
 
         if(readStan == null) {
             stan = 1117
         }
+
+    }
+
+    override fun onStart() {
+        super.onStart()
+        EventBus.getDefault().register(this)
+
+//        Thread{
+//            accessDatabase()
+//            readStan = saleDAO?.getSale()?.STAN
+//            Log.i("log_tag","readSTAN : " + readStan)
+//        }.start()
+//            Log.i("log_tag","readSTAN1 : " + readStan)
 
         if(processing == true) {
 
@@ -116,19 +135,6 @@ class TransactionActivity : AppCompatActivity() {
             }
 
         }
-
-    }
-
-    override fun onStart() {
-        super.onStart()
-        EventBus.getDefault().register(this)
-
-//        Thread{
-//            accessDatabase()
-//            readStan = saleDAO?.getSale()?.STAN
-//            Log.i("log_tag","readSTAN : " + readStan)
-//        }.start()
-//            Log.i("log_tag","readSTAN1 : " + readStan)
     }
 
     override fun onStop() {
@@ -429,7 +435,6 @@ class TransactionActivity : AppCompatActivity() {
         builder.setPositiveButton(getString(R.string.ok),
             DialogInterface.OnClickListener{ dialog, which ->
             Toast.makeText(applicationContext,android.R.string.ok, Toast.LENGTH_LONG).show()
-
                 Thread{
                     accessDatabase()
                     readStan = saleDAO?.getSale()?.STAN
@@ -437,8 +442,6 @@ class TransactionActivity : AppCompatActivity() {
 //                Log.i("log_tag","readSTAN : " + readStan)
 
                 }.start()
-
-                processing = true
             })
         
             DialogInterface.OnClickListener{ dialog, which ->
