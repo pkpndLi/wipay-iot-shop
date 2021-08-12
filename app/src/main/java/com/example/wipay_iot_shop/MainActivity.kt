@@ -21,7 +21,7 @@ class MainActivity : AppCompatActivity() {
             val email = et_Email.text.toString()
             val password = et_Password.text.toString()
             if (email != "wipay"&&password != "1234") {
-                startActivity(Intent(this,PaymentActivity::class.java))
+                startActivity(Intent(this,MenuActivity::class.java))
             }else{
                 Toast.makeText(this, "Invalid password or username", Toast.LENGTH_SHORT).show()
                 et_Email.setText("")

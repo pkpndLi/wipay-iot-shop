@@ -24,7 +24,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Wipayiotshop">
         <activity
-            android:name=".TransactionActivity"
+            android:name=".MainActivity"
             android:exported="true" >
 
             <intent-filter>
@@ -60,7 +60,7 @@
 
         </activity>
         <activity
-            android:name=".MainActivity"
+            android:name=".TransactionActivity"
             android:exported="true">
 <!--            <intent-filter>-->
 <!--                <action android:name="android.intent.action.MAIN" />-->

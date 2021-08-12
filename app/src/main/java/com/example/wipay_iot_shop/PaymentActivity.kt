@@ -16,15 +16,19 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import vpos.apipackage.ByteUtil
 import vpos.apipackage.PosApiHelper
+import vpos.apipackage.Print
 import vpos.apipackage.StringUtil
 import vpos.keypad.EMVCOHelper
 import java.util.*
 
 class PaymentActivity : AppCompatActivity() ,View.OnClickListener{
 
+<<<<<<< HEAD
 
 
 
+=======
+>>>>>>> 52589da06209889cb7e4b3132e9c1b285a549fb3
     lateinit var btn_SelectMag : Button
     lateinit var btn_SelectEMV : Button
     lateinit var btn_QR : Button
@@ -269,6 +273,8 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener{
                         Toast.makeText(this, "Magstripe.", Toast.LENGTH_SHORT).show()
                     }
                     else if (Status == 2){
+
+
                         Toast.makeText(this, "Contactcard.", Toast.LENGTH_SHORT).show()
                         val time = System.currentTimeMillis()
                         PosApiHelper.getInstance().EntryPoint_Open()
@@ -368,7 +374,7 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener{
                 EMVCOHelper.EmvAddOneAIDS(Visaaid8, Visaaid8.size)
                 EMVCOHelper.EmvSaveTermParas(TermParabuf, TermParabuf.size, 0)
                 ret = EMVCOHelper.EmvKeyPadInit(this)
-                EMVCOHelper.SetPinPadTime(5) //set pinpad timeout
+                EMVCOHelper.SetPinPadTime(0) //set pinpad timeout
                 if (ret != 0) {
                     m_bThreadFinished = true
                     return
@@ -435,15 +441,35 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener{
                 Log.e("EMV PinData", "-TagPin_data=----$TagPin_data")
                 EMVCOHelper.EmvFinal()
 
+<<<<<<< HEAD
 
 
+=======
+                var newTag5F24 = ""
+                val EXD:CharArray = Tag5F24_data.toCharArray()
+                for (i in 0 until 4){
+                    newTag5F24 += EXD[i]
+                }
+                Log.i("lag_tag","cardEXD :"+newTag5F24)
+//                Thread{
+//                    DB?.accessDatabase()
+//                    readStan = DB?.saleDAO?.getSale()?.STAN
+//                }.start()
+////                Log.i("log_tag","readSTAN : " + readStan)
+//                if(readStan == null){
+//                    stan = 1117
+//                }
+>>>>>>> 52589da06209889cb7e4b3132e9c1b285a549fb3
 
                 val itn =Intent(this,TransactionActivity::class.java).apply{
-                    putExtra("Processing",true)
+                    putExtra("processing",true)
                     putExtra("cardNO",Tag5A_data)
-                    putExtra("EXD",Tag5F24_data)
+                    putExtra("cardEXD",newTag5F24)
                     putExtra("totalAmount",totalAmount)
+<<<<<<< HEAD
 
+=======
+>>>>>>> 52589da06209889cb7e4b3132e9c1b285a549fb3
                 }
                 startActivity(itn)
             }
