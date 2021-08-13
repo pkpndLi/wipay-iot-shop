@@ -4,6 +4,8 @@ import android.content.DialogInterface
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.widget.Button
 import android.widget.EditText
@@ -69,7 +71,10 @@ class TransactionActivity : AppCompatActivity() {
 
         }
 
-        Log.i("log_tag","processing: "+processing)
+
+
+        Log.i("log_tag","onCreate!!!")
+//        Log.i("log_tag","processing: "+processing)
 
     }
 
@@ -77,20 +82,33 @@ class TransactionActivity : AppCompatActivity() {
         super.onStart()
         EventBus.getDefault().register(this)
 
-        EventBus.getDefault().post(MessageEvent(
-            "runDBthread",
-            ""
-        ))
+//        EventBus.getDefault().post(MessageEvent(
+//            "runDBthread",
+//            ""
+//        ))
+
+        setDialogS("","Comfirm your order.")
+        processing = true
+
+        val handler = Handler(Looper.getMainLooper())
+        handler.postDelayed({
+
+            Log.i("log_tag","processing: "+processing)
+            manageProcessing()
+
+        }, 7000)
+
+
 
     }
 
     override fun onResume() {
         super.onResume()
 
-        EventBus.getDefault().post(MessageEvent(
-            "runProcessing",
-            ""
-        ))
+//        EventBus.getDefault().post(MessageEvent(
+//            "runProcessing",
+//            ""
+//        ))
 
 //        if(processing == true) {
 //
@@ -113,63 +131,74 @@ class TransactionActivity : AppCompatActivity() {
         @Subscribe(threadMode = ThreadMode.MAIN)
     public fun onMessageEvent(event: MessageEvent){
 
-        if(event.type == "runDBthread"){
-            Thread{
-                accessDatabase()
-                readStan = saleDAO?.getSale()?.STAN
-                Log.i("log_tag","readSTAN : " + readStan)
-            }.start()
+//        if(event.type == "runDBthread"){
+//            Thread{
+//                accessDatabase()
+//                readStan = saleDAO?.getSale()?.STAN
+//                Log.i("log_tag","readSTAN : " + readStan)
+//            }.start()
+//
+//            if(readStan == null) {
+//                stan = 1117
+//            }
+//        }
+//        if(event.type == "runProcessing"){
+//            manageProcessing()
+//        }
+//        else {
+//
+//        }
 
-            if(readStan == null) {
-                stan = 1117
-            }
-        }
-        if(event.type == "runProcessing"){
-            manageProcessing()
-        }
-        else {
             manageResponse(event)
-        }
-
-
     }
 
     fun manageProcessing(){
-        if (reverseFlag) {
-            stuckReverse = true
 
-            Log.i("log_tag", "send reverse packet")
-//                    sendPacket(reversalPacket(stan.toString()))
-            sendPacket(reBuildISOPacket(reReversal.toString()))
-            Log.i("log_tag", "reversal:  " + reReversal.toString())
-            Log.i("log_tag", "reverseFlag:  " + reverseFlag)
-
+        stan = readStan
+        if(readStan == null){
+            stan = 1117
         }
-        else
-        {
-            stan = stan?.plus(1)
-            saleMsg = salePacket(stan.toString())
-            Log.i("log_tag", "Current stan: " + stan)
 
-            reversalMsg = reversalPacket(stan.toString())
-            var reverseTrans = ReversalEntity(null,reversalMsg.toString())
+        if(processing == true){
 
-            reverseFlag = true
-            Log.i("log_tag", "send sale packet")
-            sendPacket(saleMsg)
-            Log.i("log_tag", "sale: " + saleMsg.toString())
-            Log.i("log_tag", "reverseFlag:  " + reverseFlag)
-            //                Log.i("log_tag", "else" + reverseFlag)
+            if (reverseFlag) {
+                stuckReverse = true
 
-            Thread{
+                Log.i("log_tag", "send reverse packet")
+//                    sendPacket(reversalPacket(stan.toString()))
+                sendPacket(reBuildISOPacket(reReversal.toString()))
+                Log.i("log_tag", "reversal:  " + reReversal.toString())
+                Log.i("log_tag", "reverseFlag:  " + reverseFlag)
 
-                accessDatabase()
+            }
+            else
+            {
+                stan = stan?.plus(1)
+                saleMsg = salePacket(stan.toString())
+                Log.i("log_tag", "Current stan: " + stan)
 
-                reversalDAO?.insertReversal(reverseTrans)
-                reReversal = reversalDAO?.getReversal()?.isoMsg
+                reversalMsg = reversalPacket(stan.toString())
+                var reverseTrans = ReversalEntity(null,reversalMsg.toString())
+
+                reverseFlag = true
+                Log.i("log_tag", "send sale packet")
+                sendPacket(saleMsg)
+                Log.i("log_tag", "sale: " + saleMsg.toString())
+                Log.i("log_tag", "reverseFlag:  " + reverseFlag)
+                //                Log.i("log_tag", "else" + reverseFlag)
+
+                Thread{
+
+                    accessDatabase()
+
+                    reversalDAO?.insertReversal(reverseTrans)
+                    reReversal = reversalDAO?.getReversal()?.isoMsg
 //                        Log.i("log_tag","reReversal:  " + reReversal.toString() )
 
-            }.start()
+                }.start()
+
+            }
+
 
         }
 
@@ -468,9 +497,7 @@ class TransactionActivity : AppCompatActivity() {
                     Log.i("log_tag","readSTAN : " + readStan)
 //                Log.i("log_tag","readSTAN : " + readStan)
 
-
                 }.start()
-
             })
         
             DialogInterface.OnClickListener{ dialog, which ->
@@ -478,6 +505,7 @@ class TransactionActivity : AppCompatActivity() {
                 startActivity(Intent(this,MenuActivity::class.java))
 
             }
+
 
         val dialog = builder.create()
         dialog.show()
