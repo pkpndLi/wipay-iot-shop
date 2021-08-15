@@ -17,6 +17,9 @@ import androidx.appcompat.app.AlertDialog
 import com.example.testpos.database.transaction.*
 import com.example.testpos.evenbus.data.MessageEvent
 import com.example.wipay_iot_shop.transaction.FlagReverseDao
+import com.example.wipay_iot_shop.transaction.FlagReverseEntity
+import com.example.wipay_iot_shop.transaction.StuckReverseDao
+import com.example.wipay_iot_shop.transaction.StuckReverseEntity
 import com.imohsenb.ISO8583.builders.ISOClientBuilder
 import com.imohsenb.ISO8583.builders.ISOMessageBuilder
 import com.imohsenb.ISO8583.entities.ISOMessage
@@ -33,12 +36,11 @@ import java.io.IOException
 import kotlin.experimental.and
 
 class TransactionActivity : AppCompatActivity() {
-
-
     var appDatabase : AppDatabase? = null
     var reversalDAO : ReversalDao? = null
     var saleDAO : SaleDao? = null
     var flagReverseDAO : FlagReverseDao? = null
+    var stuckReverseDAO : StuckReverseDao? = null
 
     var processing = false
     var totalAmount:Int? = null
@@ -49,7 +51,7 @@ class TransactionActivity : AppCompatActivity() {
     var output1: TextView? = null
     var output2: TextView? = null
     var stan: Int? = null
-    var reverseFlag = false
+    var reverseFlag :Boolean = false
     var reversal: String? = null
     var responseCode: String? = null
     var reReversal: String? = null
@@ -57,7 +59,13 @@ class TransactionActivity : AppCompatActivity() {
     var saleMsg: ISOMessage? = null
     var readSale: String? = null
     var readStan: Int? = null
-    var stuckReverse = false
+    var stuckReverse :Boolean = false
+    var readFlagReverse :Boolean = false
+    var readStuckReverse :Boolean = false
+
+    var flagReverse = FlagReverseEntity(null,reverseFlag)
+    var reverseStuck = StuckReverseEntity(null,stuckReverse)
+
 
     private val HOST = "192.168.1.20"
     var PORT = 3000
@@ -66,8 +74,10 @@ class TransactionActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_transaction)
 
+
         val setOrder = findViewById<TextView>(R.id.order)
         val setAmount = findViewById<TextView>(R.id.amount)
+
 
             intent.apply {
 //          processing = getBooleanExtra("processing",false)
@@ -82,7 +92,7 @@ class TransactionActivity : AppCompatActivity() {
         setAmount.setText(totalAmount.toString())
 
         Log.i("log_tag","onCreate!!!")
-//        Log.i("log_tag","processing: "+processing)
+
 
     }
 
@@ -105,9 +115,6 @@ class TransactionActivity : AppCompatActivity() {
             manageProcessing()
 
         }, 7000)
-
-
-
     }
 
     override fun onResume() {
@@ -118,9 +125,6 @@ class TransactionActivity : AppCompatActivity() {
 //            ""
 //        ))
 
-//        if(processing == true) {
-//
-//        }
     }
 
     override fun onStop() {
@@ -134,8 +138,7 @@ class TransactionActivity : AppCompatActivity() {
         reversalDAO = appDatabase?.reversalDao()
         saleDAO = appDatabase?.saleDao()
         flagReverseDAO = appDatabase?.flagReverseDao()
-
-
+        stuckReverseDAO = appDatabase?.stuckReverseDao()
     }
 
         @Subscribe(threadMode = ThreadMode.MAIN)
@@ -169,6 +172,9 @@ class TransactionActivity : AppCompatActivity() {
             stan = 1117
         }
 
+        reverseFlag = readFlagReverse
+        stuckReverse = readStuckReverse
+
         if(processing == true){
 
             if (reverseFlag) {
@@ -180,43 +186,29 @@ class TransactionActivity : AppCompatActivity() {
                 Log.i("log_tag", "reversal:  " + reReversal.toString())
                 Log.i("log_tag", "reverseFlag:  " + reverseFlag)
 
-            }
-            else
-            {
-                stan = stan?.plus(1)
-                saleMsg = salePacket(stan.toString())
-                Log.i("log_tag", "Current stan: " + stan)
-
-                reversalMsg = reversalPacket(stan.toString())
-                var reverseTrans = ReversalEntity(null,reversalMsg.toString())
-
-                reverseFlag = true
-                Log.i("log_tag", "send sale packet")
-                sendPacket(saleMsg)
-                Log.i("log_tag", "sale: " + saleMsg.toString())
-                Log.i("log_tag", "reverseFlag:  " + reverseFlag)
-                //                Log.i("log_tag", "else" + reverseFlag)
-
                 Thread{
 
                     accessDatabase()
-
-                    reversalDAO?.insertReversal(reverseTrans)
-                    reReversal = reversalDAO?.getReversal()?.isoMsg
-//                        Log.i("log_tag","reReversal:  " + reReversal.toString() )
+                    stuckReverseDAO?.insertStuckReverse(reverseStuck)
+                    readStuckReverse = stuckReverseDAO?.getStuckReverse()?.stuckReverse!!
+//                    Log.i("log_tag"," : " + readStan)
 
                 }.start()
 
             }
+            else
+            {
+                sendTransactionProcess()
 
+            }
 
         }
 
     }
 
+
     fun manageResponse(event: MessageEvent){
 
-        reverseFlag = false
         output1?.setText("Response Message: " + event.message)
         Log.i("log_tag", "Response Message:" + event.message)
         responseCode = codeUnpack(event.message,39)
@@ -224,10 +216,11 @@ class TransactionActivity : AppCompatActivity() {
         Log.i("log_tag", "response code:"+ responseCode)
 
         if(responseCode == "3030"){
-
+            reverseFlag = false
             if(stuckReverse == true){
 
                 Log.i("log_tag", "Reversal Approve.")
+                stuckReverse = false
 //                reversalApprove()
 //                setDialog("Cenceling Success.","Successfully canceled the transaction.")
 
@@ -237,6 +230,8 @@ class TransactionActivity : AppCompatActivity() {
                 Thread{
 
                     accessDatabase()
+                    flagReverseDAO?.updateFlagReverse(flagReverse)
+                    stuckReverseDAO?.updateStuckReverse(reverseStuck)
                     saleDAO?.insertSale(reversalApprove)
                     readSale = saleDAO?.getSale()?.isoMsg
                     readStan = saleDAO?.getSale()?.STAN
@@ -245,33 +240,11 @@ class TransactionActivity : AppCompatActivity() {
 
                 }.start()
 
-                stuckReverse = false
 
-                stan = stan?.plus(1)
-                saleMsg = salePacket(stan.toString())
-                Log.i("log_tag", "Current stan: " + stan)
-
-                reversalMsg = reversalPacket(stan.toString())
-                var reverseTrans = ReversalEntity(null,reversalMsg.toString())
-
-                reverseFlag = true
-                Log.i("log_tag", "send sale packet")
-                sendPacket(saleMsg)
-                Log.i("log_tag", "sale: " + saleMsg.toString())
-                Log.i("log_tag", "reverseFlag:  " + reverseFlag)
-                //                Log.i("log_tag", "else" + reverseFlag)
-
-                //reverse สำหรับ transaction ปัจจุบัน
-                Thread{
-
-                    accessDatabase()
-                    reversalDAO?.insertReversal(reverseTrans)
-                    reReversal = reversalDAO?.getReversal()?.isoMsg
-//                        Log.i("log_tag","reReversal:  " + reReversal.toString() )
-
-                }.start()
+                sendTransactionProcess()
 
             }else{
+
                 Log.i("log_tag", "Transaction Approve.")
 //                transactionApprove()
                 setDialog(null,"Transaction complete.")
@@ -281,7 +254,7 @@ class TransactionActivity : AppCompatActivity() {
                 Thread{
 
                     accessDatabase()
-
+                    flagReverseDAO?.updateFlagReverse(flagReverse)
                     saleDAO?.insertSale(saleApprove)
                     readSale = saleDAO?.getSale()?.isoMsg
                     readStan = saleDAO?.getSale()?.STAN
@@ -293,35 +266,70 @@ class TransactionActivity : AppCompatActivity() {
 
         }else{
 
-            if(responseCode == "3934"){
-
-                errorCode(responseCode,"Seqence error / Duplicate transmission")
-
-            }else{
+            if(stuckReverse == true){
 
                 errorCode(responseCode,null)
 
+            } else{
+
+                reverseFlag = false
+
+                if(responseCode == "3934"){
+
+                    errorCode(responseCode,"Seqence error / Duplicate transmission")
+
+                }else{
+
+                    errorCode(responseCode,null)
+
+                }
+
+                Log.i("log_tag", "Error code: " + responseCode)
+                var saleApprove = SaleEntity(null,null.toString(),stan)
+
+                Thread{
+
+                    accessDatabase()
+
+                    flagReverseDAO?.updateFlagReverse(flagReverse)
+                    saleDAO?.insertSale(saleApprove)
+                    readSale = saleDAO?.getSale()?.isoMsg
+                    readStan = saleDAO?.getSale()?.STAN
+                    Log.i("log_tag","saveTransaction :  " + readSale)
+                    Log.i("log_tag","saveSTAN : " + readStan)
+
+                }.start()
+
             }
-
-            Log.i("log_tag", "Error code: " + responseCode)
-            var saleApprove = SaleEntity(null,null.toString(),stan)
-
-            Thread{
-
-                accessDatabase()
-
-                saleDAO?.insertSale(saleApprove)
-                readSale = saleDAO?.getSale()?.isoMsg
-                readStan = saleDAO?.getSale()?.STAN
-                Log.i("log_tag","saveTransaction :  " + readSale)
-                Log.i("log_tag","saveSTAN : " + readStan)
-
-            }.start()
 
         }
 
         Log.i("log_tag", "reverseFlag:  " + reverseFlag)
 
+    }
+
+    fun sendTransactionProcess(){
+
+        stan = stan?.plus(1)
+        saleMsg = salePacket(stan.toString())
+        Log.i("log_tag", "Current stan: " + stan)
+
+        reversalMsg = reversalPacket(stan.toString())
+        var reverseTrans = ReversalEntity(null,reversalMsg.toString())
+
+        reverseFlag = true
+
+        Log.i("log_tag", "send sale packet")
+        sendPacket(saleMsg)
+        Log.i("log_tag", "sale: " + saleMsg.toString())
+        Log.i("log_tag", "reverseFlag:  " + reverseFlag)
+
+        Thread{
+            accessDatabase()
+            reversalDAO?.insertReversal(reverseTrans)
+            flagReverseDAO?.insertFlagReverse(flagReverse)
+            reReversal = reversalDAO?.getReversal()?.isoMsg
+        }.start()
     }
 
     fun sendPacket(packet: ISOMessage?){
@@ -336,10 +344,8 @@ class TransactionActivity : AppCompatActivity() {
                 var response = bytesArrayToHexString(client.sendMessageSync(packet))
                 EventBus.getDefault().post(MessageEvent(
                     "iso_response",
-                    response.toString()
-                )
-                )
-//                    Log.i("log_tag", "response : $response")
+                    response.toString()))
+
                 client.disconnect()
 
             } catch (err: ISOClientException) {
@@ -362,12 +368,11 @@ class TransactionActivity : AppCompatActivity() {
             } catch(err: ISOException){
                 Log.e("log_tag", "error2 is ${err.message}")
             } catch (err: IOException){
-//                    Log.e("log_tag", "error3 is ${err.message}")
+
                 if (err.message!!.indexOf("ECONNREFUSED") > -1) {
                     Log.e("log_tag", "connection fail.")
 
                     runOnUiThread {
-//
                         if(stuckReverse == true){
 //                            reverselNonApproveConnectLoss()
                             setDialog("Cancel failed!!.Stuck in reverse.","Failed to cancel previous transaction.Connection failed! have no response message")
@@ -385,16 +390,13 @@ class TransactionActivity : AppCompatActivity() {
 
     fun errorCode(code: String?,msg: String?) {
         val builder = AlertDialog.Builder(this)
-
         builder.setTitle("Transaction Error.")
         builder.setMessage("Error code: " + code +",  ${msg}")
         //builder.setPositiveButton("OK", DialogInterface.OnClickListener(function = x))
-
         builder.setPositiveButton(getString(R.string.ok),DialogInterface.OnClickListener{ dialog, which ->
             Toast.makeText(applicationContext,android.R.string.ok, Toast.LENGTH_LONG).show()
             startActivity(Intent(this,MenuActivity::class.java))
         })
-
         val dialog = builder.create()
         dialog.show()
     }
@@ -471,51 +473,53 @@ class TransactionActivity : AppCompatActivity() {
         return responseCode
     }
 
+    fun mtiUnpack(response: String): String? {
+        val isoMessageUnpacket: ISOMessage = ISOMessageBuilder.Unpacker()
+            .setMessage(response)
+            .build()
+        val mti: String? = isoMessageUnpacket.getMti()
+        return mti
+    }
+
+
     fun setDialog(title: String?,msg: String?) {
         val builder = AlertDialog.Builder(this)
-
         builder.setTitle(title)
         builder.setMessage(msg)
-
         //builder.setPositiveButton("OK", DialogInterface.OnClickListener(function = x))
-
         builder.setPositiveButton(getString(R.string.ok),
             DialogInterface.OnClickListener{ dialog, which ->
             Toast.makeText(applicationContext,android.R.string.ok, Toast.LENGTH_LONG).show()
             startActivity(Intent(this,MenuActivity::class.java))
         })
-
         val dialog = builder.create()
         dialog.show()
     }
 
     fun setDialogS(title: String?,msg: String?) {
         val builder = AlertDialog.Builder(this)
-
         builder.setTitle(title)
         builder.setMessage(msg)
         //builder.setPositiveButton("OK", DialogInterface.OnClickListener(function = x))
-
         builder.setPositiveButton(getString(R.string.ok),
             DialogInterface.OnClickListener{ dialog, which ->
             Toast.makeText(applicationContext,android.R.string.ok, Toast.LENGTH_LONG).show()
 
-
                 Thread{
                     accessDatabase()
                     readStan = saleDAO?.getSale()?.STAN
+                    readFlagReverse = flagReverseDAO?.getFlagReverse()?.flagReverse!!
+                    readStuckReverse = stuckReverseDAO?.getStuckReverse()?.stuckReverse!!
                     Log.i("log_tag","readSTAN : " + readStan)
-//                Log.i("log_tag","readSTAN : " + readStan)
-
+                    Log.i("log_tag","readFlagReverse : " + readFlagReverse)
+                    Log.i("log_tag","readStuckReverse : " + readStuckReverse)
                 }.start()
             })
         
             DialogInterface.OnClickListener{ dialog, which ->
                 Toast.makeText(applicationContext,android.R.string.cancel, Toast.LENGTH_LONG).show()
                 startActivity(Intent(this,MenuActivity::class.java))
-
             }
-
 
         val dialog = builder.create()
         dialog.show()
