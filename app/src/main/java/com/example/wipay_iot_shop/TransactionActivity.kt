@@ -1,7 +1,9 @@
 package com.example.wipay_iot_shop
 
+import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
+import android.graphics.drawable.Drawable
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
@@ -14,6 +16,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import com.example.testpos.database.transaction.*
 import com.example.testpos.evenbus.data.MessageEvent
+import com.example.wipay_iot_shop.transaction.FlagReverseDao
 import com.imohsenb.ISO8583.builders.ISOClientBuilder
 import com.imohsenb.ISO8583.builders.ISOMessageBuilder
 import com.imohsenb.ISO8583.entities.ISOMessage
@@ -35,11 +38,13 @@ class TransactionActivity : AppCompatActivity() {
     var appDatabase : AppDatabase? = null
     var reversalDAO : ReversalDao? = null
     var saleDAO : SaleDao? = null
+    var flagReverseDAO : FlagReverseDao? = null
 
     var processing = false
     var totalAmount:Int? = null
     var cardNO:String = ""
     var cardEXD:String = ""
+    var menuName:String = ""
 
     var output1: TextView? = null
     var output2: TextView? = null
@@ -61,17 +66,20 @@ class TransactionActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_transaction)
 
-//        setDialogS("null","Comfirm your order.")
+        val setOrder = findViewById<TextView>(R.id.order)
+        val setAmount = findViewById<TextView>(R.id.amount)
 
             intent.apply {
 //          processing = getBooleanExtra("processing",false)
             totalAmount = getIntExtra("totalAmount",145)
             cardNO = getStringExtra("cardNO").toString()
             cardEXD = getStringExtra("cardEXD").toString()
+            menuName = getStringExtra("menuName").toString()
 
         }
 
-
+        setOrder.setText(menuName)
+        setAmount.setText(totalAmount.toString())
 
         Log.i("log_tag","onCreate!!!")
 //        Log.i("log_tag","processing: "+processing)
@@ -125,6 +133,8 @@ class TransactionActivity : AppCompatActivity() {
         appDatabase = AppDatabase.getAppDatabase(this)
         reversalDAO = appDatabase?.reversalDao()
         saleDAO = appDatabase?.saleDao()
+        flagReverseDAO = appDatabase?.flagReverseDao()
+
 
     }
 
@@ -344,7 +354,7 @@ class TransactionActivity : AppCompatActivity() {
 //                            timeoutAlert()
                             setDialog("Transaction failed!!","Timeout! have no response message.This transaction must be cancelled.")
                         }
-                        output2?.setText("Reverse flag: " + reverseFlag)
+
                         Log.i("log_tag", "reverseFlag:  " + reverseFlag)
                     }
                 }

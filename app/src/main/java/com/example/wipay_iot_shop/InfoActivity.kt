@@ -13,13 +13,14 @@ import android.widget.TextView
 
  class InfoActivity : AppCompatActivity() {
 
-
      var menu:String? = null
      var amount:Int? = null
      var totalAmount:Int? = null
      var quantity:Int? = null
-
-     var readStan: Int? = null
+     var setMenuName: String = ""
+     var menuName1: String = "S'mores Coffee Fappuccino"
+     var menuName2: String = "Neapolitan Fappuccino"
+     var menuName3: String = "Espresso ChoChip Bronie"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,15 +44,18 @@ import android.widget.TextView
 
         if(menu == "goods1"){
               menuImg.setImageDrawable(getImage(this, "coffee"))
-              menuName.setText("S'mores Coffee Fappuccino 145B")
+              setMenuName = menuName1
+              menuName.setText(setMenuName + "  145B")
         }
         if(menu == "goods2"){
             menuImg.setImageDrawable(getImage(this, "coffee1"))
-            menuName.setText("Neapolitan Fappuccino 145B ")
+            setMenuName = menuName2
+            menuName.setText(setMenuName +"  145B ")
         }
         if(menu == "goods3"){
             menuImg.setImageDrawable(getImage(this, "brownie"))
-            menuName.setText("Espresso ChoChip Bronie 120B")
+            setMenuName = menuName3
+            menuName.setText(setMenuName + " 120B")
         }
 
         cupImg.setOnClickListener{
@@ -68,6 +72,7 @@ import android.widget.TextView
         payBtn.setOnClickListener {
 
             val itn = Intent(this,PaymentActivity::class.java).apply{
+                putExtra("menuName",setMenuName)
                 putExtra("totalAmount",totalAmount)
 
             }
