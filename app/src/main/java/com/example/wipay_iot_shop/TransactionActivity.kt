@@ -51,7 +51,7 @@ class TransactionActivity : AppCompatActivity() {
     var output1: TextView? = null
     var output2: TextView? = null
     var stan: Int? = null
-    var reverseFlag :Boolean = false
+    var reverseFlag :Boolean? = null
     var reversal: String? = null
     var responseCode: String? = null
     var reReversal: String? = null
@@ -59,12 +59,12 @@ class TransactionActivity : AppCompatActivity() {
     var saleMsg: ISOMessage? = null
     var readSale: String? = null
     var readStan: Int? = null
-    var stuckReverse :Boolean = false
-    var readFlagReverse :Boolean = false
-    var readStuckReverse :Boolean = false
+    var stuckReverse :Boolean? = null
+    var readFlagReverse :Boolean? = null
+    var readStuckReverse :Boolean? = null
 
-    var flagReverse = FlagReverseEntity(null,reverseFlag)
-    var reverseStuck = StuckReverseEntity(null,stuckReverse)
+    var flagReverse = FlagReverseEntity(null, reverseFlag!!)
+    var reverseStuck = StuckReverseEntity(null, stuckReverse!!)
 
 
     private val HOST = "192.168.1.20"
@@ -177,7 +177,7 @@ class TransactionActivity : AppCompatActivity() {
 
         if(processing == true){
 
-            if (reverseFlag) {
+            if (reverseFlag!!) {
                 stuckReverse = true
 
                 Log.i("log_tag", "send reverse packet")
@@ -508,8 +508,8 @@ class TransactionActivity : AppCompatActivity() {
                 Thread{
                     accessDatabase()
                     readStan = saleDAO?.getSale()?.STAN
-                    readFlagReverse = flagReverseDAO?.getFlagReverse()?.flagReverse!!
-                    readStuckReverse = stuckReverseDAO?.getStuckReverse()?.stuckReverse!!
+                    readFlagReverse = flagReverseDAO?.getFlagReverse()?.flagReverse
+                    readStuckReverse = stuckReverseDAO?.getStuckReverse()?.stuckReverse
                     Log.i("log_tag","readSTAN : " + readStan)
                     Log.i("log_tag","readFlagReverse : " + readFlagReverse)
                     Log.i("log_tag","readStuckReverse : " + readStuckReverse)
