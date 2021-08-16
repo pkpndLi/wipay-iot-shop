@@ -7,7 +7,7 @@
     tools:context=".TransactionActivity">
 
     <TextView
-        android:id="@+id/textView8"
+        android:id="@+id/amount"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="B"
