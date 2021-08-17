@@ -63,8 +63,8 @@ class TransactionActivity : AppCompatActivity() {
     var readFlagReverse :Boolean? = null
     var readStuckReverse :Boolean? = null
 
-    var flagReverse = FlagReverseEntity(null, reverseFlag!!)
-    var reverseStuck = StuckReverseEntity(null, stuckReverse!!)
+    var flagReverse = FlagReverseEntity(null, reverseFlag)
+    var reverseStuck = StuckReverseEntity(null, stuckReverse)
 
 
     private val HOST = "192.168.1.20"
@@ -173,7 +173,14 @@ class TransactionActivity : AppCompatActivity() {
         }
 
         reverseFlag = readFlagReverse
+        if(readFlagReverse == null){
+            reverseFlag = false
+        }
+
         stuckReverse = readStuckReverse
+        if(readStuckReverse == null){
+            stuckReverse = false
+        }
 
         if(processing == true){
 
@@ -380,7 +387,7 @@ class TransactionActivity : AppCompatActivity() {
 //                            connectionFailAlert()
                             setDialog("Transaction failed!!","Connection failed! Please check your network.This transaction must be cancelled.")
                         }
-                        output2?.setText("Reverse flag: " + reverseFlag)
+
                         Log.i("log_tag", "reverseFlag:  " + reverseFlag)
                     }
                 }

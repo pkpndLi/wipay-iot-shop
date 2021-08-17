@@ -13,6 +13,6 @@ data class StuckReverseEntity (
     val _id: Int?,
 
     @ColumnInfo(name = "stuckReverse")
-    val stuckReverse: Boolean
+    val stuckReverse: Boolean?
 
 )

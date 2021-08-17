@@ -12,5 +12,5 @@ data class FlagReverseEntity(
     val _id: Int?,
 
     @ColumnInfo(name = "flag")
-    val flagReverse: Boolean
+    val flagReverse: Boolean?
 )
