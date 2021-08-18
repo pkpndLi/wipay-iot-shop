@@ -189,8 +189,9 @@ class TransactionActivity : AppCompatActivity() {
 
                 Log.i("log_tag", "send reverse packet")
 //                    sendPacket(reversalPacket(stan.toString()))
+//                Log.i("log_tag", "reversal:  " + reReversal.toString())
                 sendPacket(reBuildISOPacket(reReversal.toString()))
-                Log.i("log_tag", "reversal:  " + reReversal.toString())
+
                 Log.i("log_tag", "reverseFlag:  " + reverseFlag)
 
                 Thread{
@@ -240,16 +241,16 @@ class TransactionActivity : AppCompatActivity() {
                 Thread{
 
                     accessDatabase()
-                    flagReverseDAO?.updateFlagReverse(flagReverse)
-                    stuckReverseDAO?.updateStuckReverse(reverseStuck)
+                    flagReverseDAO?.insertFlagReverse(flagReverse)
+                    stuckReverseDAO?.insertStuckReverse(reverseStuck)
                     saleDAO?.insertSale(reversalApprove)
                     readSale = saleDAO?.getSale()?.isoMsg
                     readStan = saleDAO?.getSale()?.STAN
-                    Log.i("log_tag","saveReversalApprove :  " + readSale)
+                    Log.i("log_tag","saveReverse-sale :  " + readSale)
                     Log.i("log_tag","saveSTAN : " + readStan)
 
                 }.start()
-
+                stan = stan?.plus(1)
                 sendTransactionProcess()
 
             }else{
@@ -263,7 +264,7 @@ class TransactionActivity : AppCompatActivity() {
                 Thread{
 
                     accessDatabase()
-                    flagReverseDAO?.updateFlagReverse(flagReverse)
+                    flagReverseDAO?.insertFlagReverse(flagReverse)
                     saleDAO?.insertSale(saleApprove)
                     readSale = saleDAO?.getSale()?.isoMsg
                     readStan = saleDAO?.getSale()?.STAN
@@ -301,7 +302,7 @@ class TransactionActivity : AppCompatActivity() {
 
                     accessDatabase()
 
-                    flagReverseDAO?.updateFlagReverse(flagReverse)
+                    flagReverseDAO?.insertFlagReverse(flagReverse)
                     saleDAO?.insertSale(saleApprove)
                     readSale = saleDAO?.getSale()?.isoMsg
                     readStan = saleDAO?.getSale()?.STAN
@@ -332,6 +333,7 @@ class TransactionActivity : AppCompatActivity() {
 
         Log.i("log_tag", "send sale packet")
         sendPacket(saleMsg)
+//        Log.i("log_tag", "send ${reBuildISOPacket(saleMsg.toString())}")
         Log.i("log_tag", "sale: " + saleMsg.toString())
         Log.i("log_tag", "reverseFlag:  " + reverseFlag)
 
@@ -340,6 +342,7 @@ class TransactionActivity : AppCompatActivity() {
             reversalDAO?.insertReversal(reverseTrans)
             flagReverseDAO?.insertFlagReverse(flagReverse)
             reReversal = reversalDAO?.getReversal()?.isoMsg
+            Log.i("log_tag", "reversel :$reReversal")
         }.start()
     }
 
@@ -521,9 +524,11 @@ class TransactionActivity : AppCompatActivity() {
                     readStan = saleDAO?.getSale()?.STAN
                     readFlagReverse = flagReverseDAO?.getFlagReverse()?.flagReverse
                     readStuckReverse = stuckReverseDAO?.getStuckReverse()?.stuckReverse
+                    reReversal = reversalDAO?.getReversal()?.isoMsg
                     Log.i("log_tag","readSTAN : " + readStan)
                     Log.i("log_tag","readFlagReverse : " + readFlagReverse)
                     Log.i("log_tag","readStuckReverse : " + readStuckReverse)
+//                    Log.i("log_tag","reReversal : $reReversal ")
                 }.start()
             })
         
