@@ -63,8 +63,7 @@ class TransactionActivity : AppCompatActivity() {
     var readFlagReverse :Boolean? = null
     var readStuckReverse :Boolean? = null
 
-    var flagReverse = FlagReverseEntity(null, reverseFlag)
-    var reverseStuck = StuckReverseEntity(null, stuckReverse)
+
 
 
     private val HOST = "192.168.1.20"
@@ -186,6 +185,7 @@ class TransactionActivity : AppCompatActivity() {
 
             if (reverseFlag!!) {
                 stuckReverse = true
+                var reverseStuck = StuckReverseEntity(null, stuckReverse)
 
                 Log.i("log_tag", "send reverse packet")
 //                    sendPacket(reversalPacket(stan.toString()))
@@ -224,10 +224,13 @@ class TransactionActivity : AppCompatActivity() {
 
         if(responseCode == "3030"){
             reverseFlag = false
+            var flagReverse = FlagReverseEntity(null, reverseFlag)
+
             if(stuckReverse == true){
 
                 Log.i("log_tag", "Reversal Approve.")
                 stuckReverse = false
+                var reverseStuck = StuckReverseEntity(null, stuckReverse)
 //                reversalApprove()
 //                setDialog("Cenceling Success.","Successfully canceled the transaction.")
 
@@ -246,7 +249,6 @@ class TransactionActivity : AppCompatActivity() {
                     Log.i("log_tag","saveSTAN : " + readStan)
 
                 }.start()
-
 
                 sendTransactionProcess()
 
@@ -280,6 +282,7 @@ class TransactionActivity : AppCompatActivity() {
             } else{
 
                 reverseFlag = false
+                var flagReverse = FlagReverseEntity(null, reverseFlag)
 
                 if(responseCode == "3934"){
 
@@ -325,6 +328,7 @@ class TransactionActivity : AppCompatActivity() {
         var reverseTrans = ReversalEntity(null,reversalMsg.toString())
 
         reverseFlag = true
+        var flagReverse = FlagReverseEntity(null, reverseFlag)
 
         Log.i("log_tag", "send sale packet")
         sendPacket(saleMsg)
