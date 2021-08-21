@@ -20,6 +20,8 @@ import vpos.apipackage.Print
 import vpos.apipackage.StringUtil
 import vpos.keypad.EMVCOHelper
 import java.util.*
+import java.util.regex.Matcher
+import java.util.regex.Pattern
 
 class PaymentActivity : AppCompatActivity() ,View.OnClickListener{
 
@@ -29,7 +31,7 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener{
     lateinit var btn_QR : Button
     lateinit var btn_SelectOK : Button
     lateinit var tv_InfoPayment : TextView
-    var Status = -1
+    var status:Int? = null
     var mCardType = -1
     private val bIsBack = false
     private var m_bThreadFinished = true
@@ -186,6 +188,7 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener{
 //            WindowManager.LayoutParams.FLAG_FULLSCREEN
 //        )
 
+        requestPermission()
 
             intent.apply {
                 totalAmount = getIntExtra("totalAmount",145)
@@ -231,7 +234,7 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener{
                     btn_SelectEMV.isEnabled = true
                     btn_QR.isEnabled = true
 
-                    Status = 1
+                    status = 3
 
                 }catch (e: Exception){
 
@@ -244,7 +247,7 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener{
                     btn_SelectMag.isEnabled = true
                     btn_QR.isEnabled = true
 
-                    Status = 2
+                    status = 1
                 }catch (e: Exception){
 
                 }
@@ -257,217 +260,366 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener{
                     btn_SelectMag.isEnabled = true
                     btn_SelectEMV.isEnabled = true
 
-                    Status = 3
+                    status = 0
                 }catch (e: Exception){
 
                 }
 
             }
             R.id.btn_SelectOK->{
-                try {
-                    if (Status == 1){
-                        Toast.makeText(this, "Magstripe.", Toast.LENGTH_SHORT).show()
-                    }
-                    else if (Status == 2){
-
-
-                        Toast.makeText(this, "Contactcard.", Toast.LENGTH_SHORT).show()
-                        val time = System.currentTimeMillis()
-                        PosApiHelper.getInstance().EntryPoint_Open()
-                        while (System.currentTimeMillis() < time + 30 * 1000) {
-                            if (bIsBack) {
-                                Log.e("VPOS", "*****************loop detecting bIsBack 11")
-                                m_bThreadFinished = true
-                                return
-                            }
-                            setIBackFinish(object : IBackFinish {
-                                override fun isBack() {
-                                    Log.e("VPOS", "*************setIBackFinish loop")
-                                    m_bThreadFinished = true
-                                    return
+                if (status != null) {
+                    when (status) {
+                        3 -> {
+                            if (detectcard(status!!) != null) {
+                                if (detectcard(status!!)!!) {
+                                    Log.i("test", "test ")
+                                    tapcard()
                                 }
-                            })
-                            val index = 0
-                            val CheckCard_data = ""
-                            mCardType = PosApiHelper.getInstance().EntryPoint_Detect()
-                            Log.e("VPOS", "EntryPoint_Detect mCardType=="+ mCardType)
-                            if (mCardType >= 0) {
-                                break
-                            } else {
-                                Log.e("VPOS", "*************loop detecting return ")
-                                PosApiHelper.getInstance().EntryPoint_Close()
-                                m_bThreadFinished = true
-                                return
                             }
                         }
-
-                        Log.e("VPOS", "*************loop detecting return 00")
-                        PosApiHelper.getInstance().EntryPoint_Close()
-                        Log.e("VPOS", "*************loop detecting return11 ")
-                        requestPermission()
+                        1 -> {
+                            if (detectcard(status!!) != null) {
+                                if (detectcard(status!!)!!) {
+                                    insertcard()
+                                }
+                            }
+                        }
                     }
-                    else if (Status == 3){
-                        Toast.makeText(this, "Promptpay.", Toast.LENGTH_SHORT).show()
-                    }
-                    else{
-                        Toast.makeText(this, "Please select payment option.", Toast.LENGTH_SHORT).show()
-                    }
-                }catch (e: Exception){
-
                 }
             }
         }
     }
 
-    fun TransationProcess(cardType: Int){
-
-        if (cardType == -1) {
-            runOnUiThread {
+        fun detectcard(detectType : Int) :Boolean?{
+            val mCardType : Int
+            val time = System.currentTimeMillis()
+            PosApiHelper.getInstance().EntryPoint_Open()
+            while (System.currentTimeMillis() < time + 30 * 1000) {
                 if (bIsBack) {
-//                    tvEmvMsg.setText(resources.getText(R.string.emvTips))
-                } else {
-//                    tvEmvMsg.setText("timeOut~")
-                    Log.i("VPOS","timeOut~")
+                    Log.e("VPOS", "*****************loop detecting bIsBack 11")
+                    m_bThreadFinished = true
+                    return null
                 }
+                setIBackFinish(object : IBackFinish {
+                    override fun isBack() {
+                        Log.e("VPOS", "*************setIBackFinish loop")
+                        m_bThreadFinished = true
+                        return
+                    }
+                })
+                val index = 0
+                val CheckCard_data = ""
+                mCardType = PosApiHelper.getInstance().EntryPoint_Detect()
+                Log.e("VPOS", "EntryPoint_Detect mCardType=="+ mCardType)
+                if (mCardType >= 0) {
+                    if (mCardType==detectType){
+                        return true
+                        break
+                    }
+                    else{
+                        return false
+                        break
+                    }
+                } else {
+                    Log.e("VPOS", "*************loop detecting return ")
+                    PosApiHelper.getInstance().EntryPoint_Close()
+                    m_bThreadFinished = true
+                    return null
+                }
+            }
+
+            Log.e("VPOS", "*************loop detecting return 00")
+            PosApiHelper.getInstance().EntryPoint_Close()
+            Log.e("VPOS", "*************loop detecting return11 ")
+            return false
+        }
+
+
+    fun tapcard(){
+
+        PosApiHelper.getInstance().SysLogSwitch(1)
+
+        //paywave
+        EMVCOHelper.PayWaveKernelInit()
+        EMVCOHelper.PayWaveClearAllTerm()
+        EMVCOHelper.PayWaveClearAllCapk()
+        EMVCOHelper.PayWaveClearAllAIDS()
+        EMVCOHelper.PayWaveAddAids(AID_input1)
+        EMVCOHelper.PayWaveAddAids(AID_input2)
+        EMVCOHelper.PayWaveAddAids(AID_input3)
+        EMVCOHelper.PayWaveAddAids(AID_input4)
+        EMVCOHelper.PayWaveAddAids(AID_input5)
+        EMVCOHelper.PayWaveAddAids(AID_input6)
+        EMVCOHelper.PayWaveAddCapks(CAPK_input1)
+        EMVCOHelper.PayWaveAddCapks(CAPK_input2)
+        EMVCOHelper.PayWaveAddCapks(CAPK_input3)
+        EMVCOHelper.PayWaveAddCapks(CAPK_input4)
+        EMVCOHelper.PayWaveAddCapks(CAPK_input5)
+        EMVCOHelper.PayWaveAddCapks(CAPK_input6)
+        EMVCOHelper.PayWaveAddCapks(CAPK_input7)
+        EMVCOHelper.PayWaveAddCapks(CAPK_input8)
+        EMVCOHelper.PayWaveAddCapks(CAPK_input9)
+        EMVCOHelper.PayWaveAddCapks(CAPK_input10)
+        EMVCOHelper.PayWaveAddCapks(CAPK_input11)
+        EMVCOHelper.PayWaveAddCapks(CAPK_input12)
+        EMVCOHelper.PayWaveAddTerms(Term_input)
+
+
+
+        Log.e("paywaveunipay", "paywaveunipay0000")
+        var Tag5A_data = ""
+        var strEmvStatus = ""
+        var PAN = ""
+        var ret = EMVCOHelper.EmvKeyPadInit(this)
+        EMVCOHelper.SetPinPadTime(3) //set pinpad timeout is 20 seconds
+
+        if (ret != 0) {
+            m_bThreadFinished = true
+            return
+        }
+        val TagCardNo: Short = 0x5A
+        val TagTvr: Short = 0x95
+        val TagCardNo_len: Int
+        val TagTVR_len: Int
+        val CardNoData = ByteArray(56)
+        val TVRData = ByteArray(56)
+        val TagPIN: Short = 0xBD
+        val PinData_len: Int
+        val PinData = ByteArray(56)
+        val result = ByteArray(2)
+
+
+        EMVCOHelper.PayWaveSetTransType(0x00)
+        EMVCOHelper.PayWaveSetTransAmount(100)
+        EMVCOHelper.PayWaveSetOtherTransAmount(11000)
+
+        Log.e("liuhaoPayWave", "PayWave TEST")
+
+        ret = EMVCOHelper.PayWaveTransProcess()
+
+        Log.e("liuhaoPayWave", "ret = $ret")
+        if (ret < 0) {
+            runOnUiThread {
+                strEmvStatus = "EMV Termination"
+                EMVCOHelper.PayWaveFinal()
+            }
+            m_bThreadFinished = true
+//                                    return;
+        } else if (ret == 22) {
+            runOnUiThread { strEmvStatus = "EMV  GOONLINE" }
+        } else if (ret == 101) {
+            runOnUiThread { strEmvStatus = "EMV_ACCEPTED_OFFLINE" }
+        } else if (ret == 102) {
+            runOnUiThread { strEmvStatus = "EMV_DENIALED_OFFLINE" }
+        }
+
+        val pinkey_n0 = 1
+        val timeout_s0 = 10
+
+        val mode0 = byteArrayOf(1)
+        val pin_block0 = ByteArray(8)
+        var Tag57_data = ""
+        var Tag95_data = ""
+        //    emvcoHelper.EmvSetPtcCounter(2);
+
+        //     ret = emvcoHelper.EmvGetPinBlock(EmvTestActivity.this, 1, pinkey_n0, card_no0, mode0, pin_block0, timeout_s0);
+
+        //    emvcoHelper.EmvSetPtcCounter(2);
+
+        //     ret = emvcoHelper.EmvGetPinBlock(EmvTestActivity.this, 1, pinkey_n0, card_no0, mode0, pin_block0, timeout_s0);
+
+        Log.e("Robert EmvGetPinBlock", "EmvGetPinBlock ret=  $ret")
+
+        TagCardNo_len = EMVCOHelper.PayWaveGetTagData(CardNoData, 56, TagCardNo.toInt())
+        for (i in 0 until TagCardNo_len) {
+            Log.e("CardNoData", "i = " + i + "  " + CardNoData[i])
+            Tag57_data += ByteUtil.byteToHexString(CardNoData[i] /*& 0xFF*/)
+        }
+
+        if (TagCardNo_len % 2 != 0) {
+//            Tag57_data = Tag57_data.substring(0, TagCardNo_len * 2 - 1)
+        }
+        Log.e("Robert Tag57", "-Tag57_data=----$Tag57_data")
+
+        PAN = getContactlessPan(Tag57_data).toString()
+
+        TagTVR_len = EMVCOHelper.PayWaveGetTagData(TVRData, 56, TagTvr.toInt())
+        for (i in 0 until TagTVR_len) {
+            Log.e("TagTvr", "i = " + i + "  " + TVRData[i])
+            Tag95_data += ByteUtil.byteToHexString(TVRData[i] /*& 0xFF*/)
+        }
+        if (TagTVR_len % 2 != 0) {
+//            Tag95_data = Tag95_data.substring(0, TagTVR_len * 2)
+        }
+        Log.e("Tag95", "-Tag95_data=----$Tag95_data")
+
+//
+
+//
+        PinData_len = EMVCOHelper.PayWaveGetTagData(PinData, 56, TagPIN.toInt())
+
+        var TagPin_data = ""
+        for (i in 0 until PinData_len) {
+            Log.e("EMV PinData", "i = " + i + "  " + PinData[i])
+            TagPin_data += ByteUtil.byteToHexString(PinData[i] /*& 0xFF*/)
+        }
+//                        final String TagPin_data = new String(PinData, 0, PinData_len);
+        //                        final String TagPin_data = new String(PinData, 0, PinData_len);
+        val finalTagPin_data = ByteUtil.hexStr2Str(TagPin_data)
+
+
+        Log.e("EMV PinData", "-TagPin_data=----$TagPin_data")
+
+
+
+        EMVCOHelper.PayWaveFinal()
+
+//        val itn =Intent(this,TransactionActivity::class.java).apply{
+//            putExtra("processing",true)
+//            putExtra("cardNO",Tag5A_data)
+//            putExtra("cardEXD",newTag5F24)
+//            putExtra("totalAmount",totalAmount)
+//            putExtra("menuName",menuName)
+//        }
+//        startActivity(itn)
+
+    }
+
+    fun insertcard(){
+
+        var strEmvStatus = ""
+        var ret = 0
+        var Tag5A_data = ""
+        var Tag5F24_data = ""
+        PosApiHelper.getInstance().SysLogSwitch(1)
+        EMVCOHelper.EmvEnvParaInit() // 1
+        EMVCOHelper.EmvClearAllCapks() // 2
+        EMVCOHelper.EmvClearAllAIDS() // 2
+
+        // CAPK
+        capkbuf0_M = StringUtil.hexStringToBytes(Emv_M_Capkinput0)
+        EMVCOHelper.EmvAddOneCAPK(capkbuf0_M, capkbuf0_M.size)
+        capkbuf1_V = StringUtil.hexStringToBytes(EMV_V_Capkinput1)
+        EMVCOHelper.EmvAddOneCAPK(capkbuf1_V, capkbuf1_V.size)
+        capkbuf2_V = StringUtil.hexStringToBytes(EMV_V_Capkinput2)
+        EMVCOHelper.EmvAddOneCAPK(capkbuf2_V, capkbuf2_V.size)
+        capkbuf3_V = StringUtil.hexStringToBytes(EMV_V_Capkinput3)
+        EMVCOHelper.EmvAddOneCAPK(capkbuf3_V, capkbuf3_V.size)
+        capkbuf4_V = StringUtil.hexStringToBytes(EMV_V_Capkinput4)
+        EMVCOHelper.EmvAddOneCAPK(capkbuf4_V, capkbuf4_V.size)
+        Master0 = StringUtil.hexStringToBytes(EMV_Aid_input0)
+        Visaaid0 = StringUtil.hexStringToBytes(AID_input0)
+        Visaaid7 = StringUtil.hexStringToBytes(AID_input7)
+        Visaaid8 = StringUtil.hexStringToBytes(AID_input8)
+        TermParabuf = StringUtil.hexStringToBytes(EMV_Term_input)
+
+        // AID + TermPara
+        EMVCOHelper.EmvAddOneAIDS(Master0, Master0.size)
+        EMVCOHelper.EmvSaveTermParas(TermParabuf, TermParabuf.size, 0)
+        //   ret = emvcoHelper.EmvGetErrCode();
+        Log.e("VPOS", "ERROR    : EmvGetErrCode = $ret")
+        EMVCOHelper.EmvAddOneAIDS(Visaaid0, Visaaid0.size)
+        EMVCOHelper.EmvSaveTermParas(TermParabuf, TermParabuf.size, 0)
+        EMVCOHelper.EmvAddOneAIDS(Visaaid7, Visaaid7.size)
+        EMVCOHelper.EmvSaveTermParas(TermParabuf, TermParabuf.size, 0)
+        EMVCOHelper.EmvAddOneAIDS(Visaaid8, Visaaid8.size)
+        EMVCOHelper.EmvSaveTermParas(TermParabuf, TermParabuf.size, 0)
+        ret = EMVCOHelper.EmvKeyPadInit(this)
+        EMVCOHelper.SetPinPadTime(5) //set pinpad timeout
+        if (ret != 0) {
+            m_bThreadFinished = true
+            return
+        }
+        val TagCardNo = 0x5A
+        val TagCardEXD = 0x5F24
+        val TagCardNo_len: Int
+        val TagCardEXD_len: Int
+        val CardNoData = ByteArray(56)
+        val EXDData = ByteArray(56)
+        val TagPIN = 0xDF7E
+        val TagKSN = 0xDF7F
+        val PinData_len: Int
+        val KsnData_len: Int
+        val PinData = ByteArray(56)
+        val KsnData = ByteArray(56)
+        //        emvcoHelper.SetPinPadType(0);
+        EMVCOHelper.SetPinPadType(1)
+        EMVCOHelper.EmvKernelInit()
+        EMVCOHelper.EmvSetTransType(1)
+//        if (totalAmount!=null){
+        EMVCOHelper.EmvSetTransAmount(1000)
+//        }
+        EMVCOHelper.EmvSetCardType(1)
+        EMVCOHelper.SetAutoAddKSNPIN(1,2)
+        ret = EMVCOHelper.EmvProcess(1, 0) //The FLOWTYPE value is 1- simplifies the process
+        Log.e("VPOS", "EmvProcess ret = $ret")
+        //*/
+        //        ret = emvcoHelper.EmvGetErrCode();
+        Log.e("VPOS", "EmvGetErrCode = $ret")
+        if (ret < 0) {
+            runOnUiThread {
+                strEmvStatus = "EMV Termination"
+//                        tvEmvMsg.setText("EMV Termination")
             }
             m_bThreadFinished = true
             return
-        }else{
-            if (cardType == 1) {
-                Tag5A_data = ""
-                Tag5F24_data = ""
-                PosApiHelper.getInstance().SysLogSwitch(1)
-                EMVCOHelper.EmvEnvParaInit() // 1
-                EMVCOHelper.EmvClearAllCapks() // 2
-                EMVCOHelper.EmvClearAllAIDS() // 2
-
-                // CAPK
-                capkbuf0_M = StringUtil.hexStringToBytes(Emv_M_Capkinput0)
-                EMVCOHelper.EmvAddOneCAPK(capkbuf0_M, capkbuf0_M.size)
-                capkbuf1_V = StringUtil.hexStringToBytes(EMV_V_Capkinput1)
-                EMVCOHelper.EmvAddOneCAPK(capkbuf1_V, capkbuf1_V.size)
-                capkbuf2_V = StringUtil.hexStringToBytes(EMV_V_Capkinput2)
-                EMVCOHelper.EmvAddOneCAPK(capkbuf2_V, capkbuf2_V.size)
-                capkbuf3_V = StringUtil.hexStringToBytes(EMV_V_Capkinput3)
-                EMVCOHelper.EmvAddOneCAPK(capkbuf3_V, capkbuf3_V.size)
-                capkbuf4_V = StringUtil.hexStringToBytes(EMV_V_Capkinput4)
-                EMVCOHelper.EmvAddOneCAPK(capkbuf4_V, capkbuf4_V.size)
-                Master0 = StringUtil.hexStringToBytes(EMV_Aid_input0)
-                Visaaid0 = StringUtil.hexStringToBytes(AID_input0)
-                Visaaid7 = StringUtil.hexStringToBytes(AID_input7)
-                Visaaid8 = StringUtil.hexStringToBytes(AID_input8)
-                TermParabuf = StringUtil.hexStringToBytes(EMV_Term_input)
-
-                // AID + TermPara
-                EMVCOHelper.EmvAddOneAIDS(Master0, Master0.size)
-                EMVCOHelper.EmvSaveTermParas(TermParabuf, TermParabuf.size, 0)
-                //   ret = emvcoHelper.EmvGetErrCode();
-                Log.e("VPOS", "ERROR    : EmvGetErrCode = $ret")
-                EMVCOHelper.EmvAddOneAIDS(Visaaid0, Visaaid0.size)
-                EMVCOHelper.EmvSaveTermParas(TermParabuf, TermParabuf.size, 0)
-                EMVCOHelper.EmvAddOneAIDS(Visaaid7, Visaaid7.size)
-                EMVCOHelper.EmvSaveTermParas(TermParabuf, TermParabuf.size, 0)
-                EMVCOHelper.EmvAddOneAIDS(Visaaid8, Visaaid8.size)
-                EMVCOHelper.EmvSaveTermParas(TermParabuf, TermParabuf.size, 0)
-                ret = EMVCOHelper.EmvKeyPadInit(this)
-                EMVCOHelper.SetPinPadTime(0) //set pinpad timeout
-                if (ret != 0) {
-                    m_bThreadFinished = true
-                    return
-                }
-                val TagCardNo = 0x5A
-                val TagCardEXD = 0x5F24
-                val TagCardNo_len: Int
-                val TagCardEXD_len: Int
-                val CardNoData = ByteArray(56)
-                val EXDData = ByteArray(56)
-                val TagPIN = 0xDF7E
-                val TagKSN = 0xDF7F
-                val PinData_len: Int
-                val KsnData_len: Int
-                val PinData = ByteArray(56)
-                val KsnData = ByteArray(56)
-                //        emvcoHelper.SetPinPadType(0);
-                EMVCOHelper.SetPinPadType(1)
-                EMVCOHelper.EmvKernelInit()
-                EMVCOHelper.EmvSetTransType(1)
-                if (totalAmount!=null){
-                    EMVCOHelper.EmvSetTransAmount(totalAmount!!)
-                }
-                EMVCOHelper.EmvSetCardType(1)
-                EMVCOHelper.SetAutoAddKSNPIN(1)
-                ret = EMVCOHelper.EmvProcess(1, 0) //The FLOWTYPE value is 1- simplifies the process
-                Log.e("VPOS", "EmvProcess ret = $ret")
-                //*/
-                //        ret = emvcoHelper.EmvGetErrCode();
-                Log.e("VPOS", "EmvGetErrCode = $ret")
-                if (ret < 0) {
-                    runOnUiThread {
-                        strEmvStatus = "EMV Termination"
-//                        tvEmvMsg.setText("EMV Termination")
-                    }
-                    m_bThreadFinished = true
-                    return
-                } else if (ret == 3) {
-                    runOnUiThread { strEmvStatus = "EMV  GOONLINE" }
-                }
-                TagCardNo_len = EMVCOHelper.EmvGetTagData(CardNoData, 56, TagCardNo.toInt())
-                TagCardEXD_len = EMVCOHelper.EmvGetTagData(EXDData, 56, TagCardEXD.toInt())
-                for (i in 0 until TagCardNo_len) {
-                    Log.e("CardNoData", "i = " + i + "  " + CardNoData[i])
-                    Tag5A_data += ByteUtil.byteToHexString(CardNoData[i] /*& 0xFF*/)
-                }
-                for (i in 0 until TagCardEXD_len) {
-                    Log.e("EXDData", "i = " + i + "  " + EXDData[i])
-                    Tag5F24_data += ByteUtil.byteToHexString(EXDData[i] /*& 0xFF*/)
-                }
-                if (TagCardNo_len % 2 != 0) {
-                    Tag5A_data = Tag5A_data.substring(0, TagCardNo_len * 2 - 1)
-                }
-                if (TagCardEXD_len % 2 != 0) {
-                    Tag5F24_data = Tag5F24_data.substring(0, TagCardEXD_len * 2 - 1)
-                }
-                PinData_len = EMVCOHelper.EmvGetTagData(PinData, 56, TagPIN)
-                val TagPin_data = ByteUtil.bytearrayToHexString(PinData, PinData_len)
-                KsnData_len = EMVCOHelper.EmvGetTagData(KsnData, 56, TagKSN)
-                val Ksn_data = ByteUtil.bytearrayToHexString(KsnData, KsnData_len)
-                val bypass = EMVCOHelper.EmvPinbyPass()
-                //////////////////////////////////////////////Card No & EXD ////////////////////////////////////////////////////////////
-                Log.e("VPOS",strEmvStatus + "\nCardNO:" + Tag5A_data + "Card Expridate:"+Tag5F24_data+"\n" + "PIN0:" + TagPin_data + "\n" + "KSN0:" + Ksn_data)
-                Log.e("EMV PinData", "-TagPin_data=----$TagPin_data")
-                EMVCOHelper.EmvFinal()
-
-
-
-
-
-                var newTag5F24 = ""
-                val EXD:CharArray = Tag5F24_data.toCharArray()
-                for (i in 0 until 4){
-                    newTag5F24 += EXD[i]
-                }
-                Log.i("lag_tag","cardEXD :"+newTag5F24)
-//                Thread{
-//                    DB?.accessDatabase()
-//                    readStan = DB?.saleDAO?.getSale()?.STAN
-//                }.start()
-////                Log.i("log_tag","readSTAN : " + readStan)
-//                if(readStan == null){
-//                    stan = 1117
-//                }
-
-
-                val itn =Intent(this,TransactionActivity::class.java).apply{
-                    putExtra("processing",true)
-                    putExtra("cardNO",Tag5A_data)
-                    putExtra("cardEXD",newTag5F24)
-                    putExtra("totalAmount",totalAmount)
-                    putExtra("menuName",menuName)
-                }
-                startActivity(itn)
-            }
+        } else if (ret == 3) {
+            runOnUiThread { strEmvStatus = "EMV  GOONLINE" }
         }
+        TagCardNo_len = EMVCOHelper.EmvGetTagData(CardNoData, 56, TagCardNo.toInt())
+        TagCardEXD_len = EMVCOHelper.EmvGetTagData(EXDData, 56, TagCardEXD.toInt())
+        for (i in 0 until TagCardNo_len) {
+            Log.e("CardNoData", "i = " + i + "  " + CardNoData[i])
+            Tag5A_data += ByteUtil.byteToHexString(CardNoData[i] /*& 0xFF*/)
+        }
+        for (i in 0 until TagCardEXD_len) {
+            Log.e("EXDData", "i = " + i + "  " + EXDData[i])
+            Tag5F24_data += ByteUtil.byteToHexString(EXDData[i] /*& 0xFF*/)
+        }
+        if (TagCardNo_len % 2 != 0) {
+            Tag5A_data = Tag5A_data.substring(0, TagCardNo_len * 2 - 1)
+        }
+        if (TagCardEXD_len % 2 != 0) {
+            Tag5F24_data = Tag5F24_data.substring(0, TagCardEXD_len * 2 - 1)
+        }
+        PinData_len = EMVCOHelper.EmvGetTagData(PinData, 56, TagPIN)
+        val TagPin_data = ByteUtil.bytearrayToHexString(PinData, PinData_len)
+        KsnData_len = EMVCOHelper.EmvGetTagData(KsnData, 56, TagKSN)
+        val Ksn_data = ByteUtil.bytearrayToHexString(KsnData, KsnData_len)
+        val bypass = EMVCOHelper.EmvPinbyPass()
+        //////////////////////////////////////////////Card No & EXD ////////////////////////////////////////////////////////////
+        Log.e("VPOS",strEmvStatus + "\nCardNO:" + Tag5A_data + "Card Expridate:"+Tag5F24_data+"\n" + "PIN0:" + TagPin_data + "\n" + "KSN0:" + Ksn_data)
+        Log.e("EMV PinData", "-TagPin_data=----$TagPin_data")
+        EMVCOHelper.EmvFinal()
 
+        var newTag5F24 = ""
+        val EXD:CharArray = Tag5F24_data.toCharArray()
+        for (i in 0 until 4){
+            newTag5F24 += EXD[i]
+        }
+        Log.i("lag_tag","cardEXD :"+newTag5F24)
+
+        val itn =Intent(this,TransactionActivity::class.java).apply{
+            putExtra("processing",true)
+            putExtra("cardNO",Tag5A_data)
+            putExtra("cardEXD",newTag5F24)
+            putExtra("totalAmount",totalAmount)
+            putExtra("menuName",menuName)
+        }
+        startActivity(itn)
+    }
+
+
+
+    private val track2Pattern = Pattern.compile("^([0-9]{1,19})(?:[=Dd])([0-9]{4}|=)([0-9]{3}|=).*$")
+    private val track1Pattern = Pattern.compile("^.*?([0-9]{10,19})\\^([^^]{2,26})\\^([0-9]{4}|\\^)([0-9]{3}|\\^)[^;]*(;([^?]*)\\?.*)?$")
+    fun getContactlessPan(track2: String?): String? {
+        val matcher: Matcher = track2Pattern.matcher(track2)
+        return if (matcher.find()) {
+            matcher.group(1)
+        } else {
+            null
+        }
     }
 
 
@@ -478,21 +630,11 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener{
             //Without the permission to Write, to apply for the permission to Read and Write, the system will pop up the permission dialog
             ActivityCompat.requestPermissions(this, MY_PERMISSIONS_STORAGE,REQUEST_EXTERNAL_STORAGE)
         } else {
-            TransationProcess(mCardType)
+
         }
     }
 
-
-    private val DISABLE_FUNCTION_LAUNCH_ACTION = "android.intent.action.DISABLE_FUNCTION_LAUNCH"
-    // disable the power key when the device is boot from alarm but not ipo boot
-    private fun disableFunctionLaunch(state: Boolean) {
-        val disablePowerKeyIntent = Intent(DISABLE_FUNCTION_LAUNCH_ACTION)
-        if (state) {
-            disablePowerKeyIntent.putExtra("state", true)
-        } else {
-            disablePowerKeyIntent.putExtra("state", false)
-        }
-        sendBroadcast(disablePowerKeyIntent)
-    }
 
 }
+
+
