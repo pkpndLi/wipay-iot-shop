@@ -38,7 +38,8 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener{
 
     var totalAmount:Int? = null
     var menuName: String = ""
-
+//    var stan: Int? = null
+    var readStan: Int? = null
 
     ///////////////////////EMV Config///////////////////////////////
 
@@ -193,6 +194,8 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener{
             intent.apply {
                 totalAmount = getIntExtra("totalAmount",145)
                 menuName = getStringExtra("menuName").toString()
+                readStan = getIntExtra("readStan",117)
+
             }
 
             Toast.makeText(applicationContext,"totalAmount" + totalAmount,Toast.LENGTH_LONG).show()
@@ -425,7 +428,7 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener{
         //     ret = emvcoHelper.EmvGetPinBlock(EmvTestActivity.this, 1, pinkey_n0, card_no0, mode0, pin_block0, timeout_s0);
 
         //    emvcoHelper.EmvSetPtcCounter(2);
-
+        
         //     ret = emvcoHelper.EmvGetPinBlock(EmvTestActivity.this, 1, pinkey_n0, card_no0, mode0, pin_block0, timeout_s0);
 
         Log.e("Robert EmvGetPinBlock", "EmvGetPinBlock ret=  $ret")
@@ -560,6 +563,30 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener{
             runOnUiThread {
                 strEmvStatus = "EMV Termination"
 //                        tvEmvMsg.setText("EMV Termination")
+                var newTag5F24 = ""
+                val EXD:CharArray = Tag5F24_data.toCharArray()
+                for (i in 0 until 4){
+                    newTag5F24 += EXD[i]
+                }
+                Log.i("lag_tag","cardEXD :"+newTag5F24)
+//                Thread{
+//                    DB?.accessDatabase()
+//                    readStan = DB?.saleDAO?.getSale()?.STAN
+//                }.start()
+////                Log.i("log_tag","readSTAN : " + readStan)
+//                if(readStan == null){
+//                    stan = 1117
+//                }
+
+
+                val itn =Intent(this,TransactionActivity::class.java).apply{
+                    putExtra("processing",true)
+                    putExtra("cardNO",Tag5A_data)
+                    putExtra("cardEXD",newTag5F24)
+                    putExtra("totalAmount",totalAmount)
+                    putExtra("readStan",readStan)
+                }
+                startActivity(itn)
             }
             m_bThreadFinished = true
             return
