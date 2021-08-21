@@ -633,8 +633,6 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener{
 
         }
     }
-
-
 }
 
 
