@@ -66,8 +66,8 @@ class TransactionActivity : AppCompatActivity() {
 
 
 
-    private val HOST = "192.168.1.20"
-    var PORT = 3000
+    private val HOST = "192.168.1.16"
+    var PORT = 5000
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -168,7 +168,7 @@ class TransactionActivity : AppCompatActivity() {
 
         stan = readStan
         if(readStan == null){
-            stan = 1117
+            stan = 1129
         }
 
         reverseFlag = readFlagReverse
@@ -364,7 +364,7 @@ class TransactionActivity : AppCompatActivity() {
 
             } catch (err: ISOClientException) {
                 Log.e("log_tag", "error1 is ${err.message}")
-                if (err.message.equals("Read Timeout")) {
+                if (err.message!!.equals("Read Timeout")) {
 
                     runOnUiThread {
 //

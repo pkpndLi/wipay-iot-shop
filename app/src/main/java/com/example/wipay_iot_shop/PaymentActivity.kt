@@ -365,7 +365,6 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener{
         EMVCOHelper.PayWaveAddTerms(Term_input)
 
 
-
         Log.e("paywaveunipay", "paywaveunipay0000")
         var Tag5A_data = ""
         var strEmvStatus = ""
