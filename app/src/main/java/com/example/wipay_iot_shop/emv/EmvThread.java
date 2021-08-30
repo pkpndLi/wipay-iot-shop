@@ -527,10 +527,14 @@ public class EmvThread extends Thread{
                                 KsnData_len =  emvcoHelper.EmvGetTagData(KsnData, 56, TagKSN);
                                 final String Ksn_data = ByteUtil.bytearrayToHexString(KsnData, KsnData_len);
                                 final int bypass = emvcoHelper.EmvPinbyPass();
-
+                                String newTag5F24 = "";
+                                char[] EXD = Tag5F24_data.toCharArray();
+                                for (int i =0;i<4;i++){;
+                                    newTag5F24 += EXD[i];
+                                }
                                 Log.e("VPOS",strEmvStatus + "\nCardNO:" + Tag5A_data + "\n" + "PIN0:" + TagPin_data + "\n" + "KSN0:" + Ksn_data);
                                 Log.e("EMV PinData", "-TagPin_data=----" + TagPin_data);
-                                String Object = "{\"cardNO\": \""+Tag5A_data+"\",\"cardEXD\": \""+Tag5F24_data+"\"}";
+                                String Object = "{\"cardNO\": \""+Tag5A_data+"\",\"cardEXD\": \""+newTag5F24+"\"}";
                                 DataEmv emvTag = gson.fromJson(Object, DataEmv.class);
 //                                Log.i("test",emvTag.cardNO+"\t"+emvTag.cardEXD);
                                 if(event!=null){
