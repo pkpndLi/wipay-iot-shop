@@ -51,7 +51,7 @@ dependencies {
     implementation files('libs/ISO8583-1.0.6-SNAPSHOT.jar')
     testImplementation 'junit:junit:4.+'
     implementation 'org.greenrobot:eventbus:3.2.0'
-
+    implementation 'com.google.code.gson:gson:2.8.7'
     def room_version = "2.3.0"
 
     // To use Kotlin annotation processing tool (kapt)

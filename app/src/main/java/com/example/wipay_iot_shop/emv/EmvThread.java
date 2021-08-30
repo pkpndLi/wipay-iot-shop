@@ -3,7 +3,11 @@ package com.example.wipay_iot_shop.emv;
 import android.content.Context;
 import android.util.Log;
 
+import com.example.wipay_iot_shop.emv.data.DataEmv;
+import com.google.gson.Gson;
+
 import java.util.Arrays;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -34,6 +38,7 @@ public class EmvThread extends Thread{
     String PaypssTag57_data = "";
 
     EmvEvent event;
+    Gson gson = new Gson();
 
     byte[] UnionPay_Debit = {
             (byte) 0x9F, 0x06, 0x08, (byte) 0xA0, 0x00, 0x00, 0x03, 0x33, 0x01, 0x01,0x01, (byte) 0x9F, 0x01, 0x06, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, (byte) 0x9F, 0x09, 0x02, 0x00,
@@ -281,9 +286,11 @@ public class EmvThread extends Thread{
 
     int type = 0;
     Context context;
-        EmvThread(int type, Context context) {
+    int amount = 0;
+        public EmvThread(int type, Context context, int amount) {
             this.type = type;
             this.context = context;
+            this.amount = amount;
         }
 
         public boolean isThreadFinished() {
@@ -523,8 +530,15 @@ public class EmvThread extends Thread{
 
                                 Log.e("VPOS",strEmvStatus + "\nCardNO:" + Tag5A_data + "\n" + "PIN0:" + TagPin_data + "\n" + "KSN0:" + Ksn_data);
                                 Log.e("EMV PinData", "-TagPin_data=----" + TagPin_data);
+                                String Object = "{\"cardNO\": \""+Tag5A_data+"\",\"cardEXD\": \""+Tag5F24_data+"\"}";
+                                DataEmv emvTag = gson.fromJson(Object, DataEmv.class);
+//                                Log.i("test",emvTag.cardNO+"\t"+emvTag.cardEXD);
+                                if(event!=null){
+                                    event.onGetDataCard(emvTag);
+                                }
 
                                 emvcoHelper.EmvFinal();
+
 
                             }
                             ///*******************----Contactless-Quics and PayWave---******************************///
@@ -763,3 +777,5 @@ public class EmvThread extends Thread{
     }
 
 }
+
+
