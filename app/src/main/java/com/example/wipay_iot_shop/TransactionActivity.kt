@@ -1,21 +1,18 @@
 package com.example.wipay_iot_shop
 
-import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
-import android.graphics.drawable.Drawable
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import android.widget.Button
-import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import com.example.testpos.database.transaction.*
 import com.example.testpos.evenbus.data.MessageEvent
+import com.example.wipay_iot_shop.printer.Printer
 import com.example.wipay_iot_shop.transaction.FlagReverseDao
 import com.example.wipay_iot_shop.transaction.FlagReverseEntity
 import com.example.wipay_iot_shop.transaction.StuckReverseDao
@@ -63,11 +60,12 @@ class TransactionActivity : AppCompatActivity() {
     var readFlagReverse :Boolean? = null
     var readStuckReverse :Boolean? = null
 
+    var printer :Printer?=null
 
 
 
-    private val HOST = "192.168.1.16"
-    var PORT = 5000
+    private val HOST = "192.168.1.20"
+    var PORT = 3000
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -261,6 +259,9 @@ class TransactionActivity : AppCompatActivity() {
 
                 var saleApprove = SaleEntity(null,saleMsg.toString(),stan)
 
+                printer = Printer(menuName,totalAmount)
+                printer!!.printSlip()
+
                 Thread{
 
                     accessDatabase()
@@ -270,8 +271,8 @@ class TransactionActivity : AppCompatActivity() {
                     readStan = saleDAO?.getSale()?.STAN
                     Log.i("log_tag","saveTransaction :  " + readSale)
                     Log.i("log_tag","saveSTAN : " + readStan)
-
                 }.start()
+
             }
 
         }else{
@@ -558,5 +559,4 @@ class TransactionActivity : AppCompatActivity() {
         }
         return strBuilder.toString()
     }
-
 }
