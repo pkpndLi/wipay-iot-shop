@@ -9,13 +9,10 @@ class Printer(menuName:String, totalAmount: Int?){
     fun printSlip(){
         var ret = posApiHelper!!.PrintInit()
         posApiHelper!!.PrintSetGray(ret)
-        //	Print.Lib_PrnStr(string + "\n");
         posApiHelper.PrintSetFont(24.toByte(), 24.toByte(), 0x00.toByte())
         posApiHelper.PrintStr("\ttest print slip\n")
-        posApiHelper.PrintStr("\tLIST\t\t\t\t\t\t\t\t\tTOTAL\n")
-        posApiHelper.PrintStr("\t$menuName\t\t\t\t\t\t\t\t\t$totalAmount\n")
-        posApiHelper.PrintStr("\n")
-        posApiHelper.PrintStr("\n")
+        posApiHelper.PrintStr("\tLIST\t\t\t\t\t\t\t\t\t\t\t\t\tTOTAL\n")
+        posApiHelper.PrintStr("\t$menuName\t\t\t\t\t\t\t$totalAmount")
         posApiHelper.PrintStr("\n")
         posApiHelper.PrintStr("\n")
         posApiHelper.PrintStr("\n")
