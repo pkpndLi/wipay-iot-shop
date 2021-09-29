@@ -201,6 +201,7 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener,EmvEvent{
                 putExtra("cardEXD",dataEmv!!.cardEXD)
                 putExtra("totalAmount",totalAmount)
                 putExtra("menuName",menuName)
+                Log.i("testtttt",dataEmv!!.cardNO +"|||"+dataEmv!!.cardEXD)
             }
         startActivity(itn)
         }

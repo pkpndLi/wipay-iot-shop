@@ -314,8 +314,7 @@ public class EmvThread extends Thread {
                             String newTag5F24 = "";
                             char[] EXD = Tag5F24_data.toCharArray();
                             for (int i = 0; i < 4; i++) {
-                                ;
-//                                newTag5F24 += EXD[i];
+                                newTag5F24 += EXD[i];
                             }
                             Log.e("VPOS", strEmvStatus + "\nCardNO:" + Tag5A_data + "\n" + "PIN0:" + TagPin_data + "\n" + "KSN0:" + Ksn_data);
                             Log.e("EMV PinData", "-TagPin_data=----" + TagPin_data);

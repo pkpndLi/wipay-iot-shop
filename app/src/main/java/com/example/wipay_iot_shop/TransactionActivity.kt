@@ -64,7 +64,7 @@ class TransactionActivity : AppCompatActivity() {
 
 
 
-    private val HOST = "192.168.68.173"
+    private val HOST = "192.168.1.20"
     var PORT = 3000
 
     override fun onCreate(savedInstanceState: Bundle?) {
