@@ -19,7 +19,11 @@ import androidx.core.content.ContextCompat
 import com.example.wipay_iot_shop.emv.EmvEvent
 import com.example.wipay_iot_shop.emv.EmvThread
 import com.example.wipay_iot_shop.emv.EmvThread.TYPE_TEST_EMV
+import com.example.wipay_iot_shop.emv.McrEvent
+import com.example.wipay_iot_shop.emv.McrThread
 import com.example.wipay_iot_shop.emv.data.DataEmv
+import com.example.wipay_iot_shop.emv.data.DataMcr
+import com.example.wipay_iot_shop.printer.Printer
 import vpos.apipackage.ByteUtil
 import vpos.apipackage.PosApiHelper
 import vpos.apipackage.Print
@@ -29,7 +33,7 @@ import java.util.*
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
-class PaymentActivity : AppCompatActivity() ,View.OnClickListener,EmvEvent{
+class PaymentActivity : AppCompatActivity() ,View.OnClickListener,EmvEvent,McrEvent{
 
     lateinit var btn_SelectMag : Button
     lateinit var btn_SelectEMV : Button
@@ -39,7 +43,9 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener,EmvEvent{
     var status:Int? = null
     var totalAmount:Int? = null
     var menuName: String = ""
+    var mcrThread: McrThread? = null
     private var emvThread: EmvThread? = null
+    var printer: Printer? =null
     var isOpen = false
 
 
@@ -60,7 +66,7 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener,EmvEvent{
                 menuName = getStringExtra("menuName").toString()
             }
 
-            Toast.makeText(applicationContext,"totalAmount" + totalAmount,Toast.LENGTH_LONG).show()
+//            Toast.makeText(applicationContext,"totalAmount" + totalAmount,Toast.LENGTH_LONG).show()
 
             setView()
 
@@ -81,11 +87,25 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener,EmvEvent{
     }
     override fun onClick(view: View?) {
         when(view?.id){
+            R.id.btn_SelectMag->{
+                try {
+                    btn_SelectMag.isEnabled = false
+                    btn_SelectEMV.isEnabled = true
+                    btn_QR.isEnabled = true
+
+                    Toast.makeText(applicationContext,"Click pay and swipe card",Toast.LENGTH_LONG).show()
+                    status = 3
+                }catch (e: Exception){
+                }
+            }
+//
+
             R.id.btn_SelectEMV->{
                 try {
                     btn_SelectEMV.isEnabled = false
                     btn_QR.isEnabled = true
-
+                    btn_SelectMag.isEnabled = true
+                    Toast.makeText(applicationContext,"Contact card and click pay  ",Toast.LENGTH_LONG).show()
                     status = 1
                 }catch (e: Exception){
 
@@ -97,7 +117,7 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener,EmvEvent{
 
                     btn_QR.isEnabled = false
                     btn_SelectEMV.isEnabled = true
-
+                    btn_SelectMag.isEnabled = true
                     status = 2
                 }catch (e: Exception){
 
@@ -116,43 +136,21 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener,EmvEvent{
                         }
                         2 -> {
                         }
+                        3->{
+                            try {
+                                mcrThread = McrThread()
+                                mcrThread!!.setMcrEvent(this)
+                                mcrThread?.mrcRead()
+
+                            }catch (e: Exception){
+
+                            }
+                        }
                     }
                 }
             }
         }
     }
-
-
-    override fun onResume() {
-        //disable the power key
-        disableFunctionLaunch(true)
-        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        super.onResume()
-        isOpen = false
-    }
-
-
-    override fun onPause() {
-        //enable the power key
-        disableFunctionLaunch(false)
-        window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        super.onPause()
-        if (emvThread != null) {
-            emvThread!!.interrupt()
-            EMVCOHelper.EmvFinal()
-            return
-        }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        PosApiHelper.getInstance().EntryPoint_Close()
-
-        //add by liuhao 0529 close led
-//        closeLed();
-        emvThread?.interrupt()
-    }
-
 
     private fun testEmv() {
         if (emvThread != null && !emvThread!!.isThreadFinished()) {
@@ -201,11 +199,23 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener,EmvEvent{
                 putExtra("cardEXD",dataEmv!!.cardEXD)
                 putExtra("totalAmount",totalAmount)
                 putExtra("menuName",menuName)
-                Log.i("testtttt",dataEmv!!.cardNO +"|||"+dataEmv!!.cardEXD)
             }
         startActivity(itn)
         }
 
+    }
+
+    override fun onGetDataCardMagnetic(dataMag: DataMcr?) {
+        runOnUiThread{
+            val itn =Intent(this,TransactionActivity::class.java).apply{
+                putExtra("processing",true)
+                putExtra("cardNO",dataMag!!.cardNO)
+                putExtra("cardEXD",dataMag!!.cardEXD)
+                putExtra("totalAmount",totalAmount)
+                putExtra("menuName",menuName)
+            }
+            startActivity(itn)
+        }
     }
 }
 

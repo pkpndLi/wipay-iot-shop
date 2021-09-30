@@ -37,8 +37,7 @@
         android:layout_height="57dp"
         android:layout_marginTop="36dp"
         android:backgroundTint="#777777"
-        android:text="tapcard"
-        android:visibility="gone"
+        android:text="macneticstripe"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
@@ -48,12 +47,13 @@
         android:id="@+id/btn_SelectEMV"
         android:layout_width="358dp"
         android:layout_height="57dp"
-        android:layout_marginTop="28dp"
+        android:layout_marginTop="12dp"
         android:backgroundTint="#777777"
-        android:text="debit or credit card"
+        android:text="contactcard"
         app:layout_constraintEnd_toEndOf="@+id/btn_SelectMag"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="@+id/btn_SelectMag"
-        app:layout_constraintTop_toBottomOf="@+id/textView4" />
+        app:layout_constraintTop_toBottomOf="@+id/btn_SelectMag" />
 
     <Button
         android:id="@+id/btn_QR"
@@ -62,7 +62,6 @@
         android:layout_marginTop="12dp"
         android:backgroundTint="#777777"
         android:text="promptpay QR"
-        android:visibility="invisible"
         app:layout_constraintEnd_toEndOf="@+id/btn_SelectEMV"
         app:layout_constraintHorizontal_bias="0.452"
         app:layout_constraintStart_toStartOf="@+id/btn_SelectEMV"
