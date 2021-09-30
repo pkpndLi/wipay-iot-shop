@@ -13,7 +13,6 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="40dp"
         android:layout_marginTop="40dp"
-        android:fontFamily="monofur_bold_for_powerline"
         android:text="Payment"
         android:textSize="24dp"
         app:layout_constraintStart_toStartOf="parent"
@@ -72,7 +71,6 @@
         android:layout_width="353dp"
         android:layout_height="167dp"
         android:layout_marginTop="4dp"
-        android:text="TextView"
         app:layout_constraintEnd_toEndOf="@+id/btn_QR"
         app:layout_constraintStart_toStartOf="@+id/btn_QR"
         app:layout_constraintTop_toBottomOf="@+id/btn_QR" />
