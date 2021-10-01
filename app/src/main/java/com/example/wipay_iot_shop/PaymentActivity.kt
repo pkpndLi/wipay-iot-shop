@@ -9,29 +9,19 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.view.Window
-import android.view.WindowManager
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.example.wipay_iot_shop.emv.EmvEvent
-import com.example.wipay_iot_shop.emv.EmvThread
-import com.example.wipay_iot_shop.emv.EmvThread.TYPE_TEST_EMV
-import com.example.wipay_iot_shop.emv.McrEvent
-import com.example.wipay_iot_shop.emv.McrThread
-import com.example.wipay_iot_shop.emv.data.DataEmv
-import com.example.wipay_iot_shop.emv.data.DataMcr
+import com.example.wipay_iot_shop.readcard.EmvEvent
+import com.example.wipay_iot_shop.readcard.EmvThread
+import com.example.wipay_iot_shop.readcard.EmvThread.TYPE_TEST_EMV
+import com.example.wipay_iot_shop.readcard.McrEvent
+import com.example.wipay_iot_shop.readcard.McrThread
+import com.example.wipay_iot_shop.readcard.data.DataEmv
+import com.example.wipay_iot_shop.readcard.data.DataMcr
 import com.example.wipay_iot_shop.printer.Printer
-import vpos.apipackage.ByteUtil
-import vpos.apipackage.PosApiHelper
-import vpos.apipackage.Print
-import vpos.apipackage.StringUtil
-import vpos.keypad.EMVCOHelper
-import java.util.*
-import java.util.regex.Matcher
-import java.util.regex.Pattern
 
 class PaymentActivity : AppCompatActivity() ,View.OnClickListener,EmvEvent,McrEvent{
 

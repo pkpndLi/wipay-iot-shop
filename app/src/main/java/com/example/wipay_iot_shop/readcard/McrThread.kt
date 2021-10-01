@@ -1,12 +1,10 @@
-package com.example.wipay_iot_shop.emv
+package com.example.wipay_iot_shop.readcard
 
 import android.util.Log
-import com.example.wipay_iot_shop.emv.data.DataEmv
-import com.example.wipay_iot_shop.emv.data.DataMcr
+import com.example.wipay_iot_shop.readcard.data.DataMcr
 import com.google.gson.Gson
 import vpos.apipackage.PosApiHelper
 import java.lang.Exception
-import org.jetbrains.annotations.NotNull
 
 class McrThread{
     var test = ""

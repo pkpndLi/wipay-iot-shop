@@ -1,4 +1,4 @@
-package com.example.wipay_iot_shop.emv.data;
+package com.example.wipay_iot_shop.readcard.data;
 
 public class DataMcr {
     public String cardNO = "";

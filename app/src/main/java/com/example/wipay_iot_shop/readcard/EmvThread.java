@@ -1,13 +1,12 @@
-package com.example.wipay_iot_shop.emv;
+package com.example.wipay_iot_shop.readcard;
 
 import android.content.Context;
 import android.util.Log;
 
-import com.example.wipay_iot_shop.emv.data.DataEmv;
+import com.example.wipay_iot_shop.readcard.data.DataEmv;
 import com.google.gson.Gson;
 
 import java.util.Arrays;
-import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
