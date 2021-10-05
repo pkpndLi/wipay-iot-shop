@@ -187,6 +187,7 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener,EmvEvent,McrEv
                 putExtra("processing",true)
                 putExtra("cardNO",dataEmv!!.cardNO)
                 putExtra("cardEXD",dataEmv!!.cardEXD)
+                putExtra("DE55",dataEmv!!.cardDE55)
                 putExtra("totalAmount",totalAmount)
                 putExtra("menuName",menuName)
             }
@@ -203,6 +204,7 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener,EmvEvent,McrEv
                 putExtra("cardEXD",dataMag!!.cardEXD)
                 putExtra("totalAmount",totalAmount)
                 putExtra("menuName",menuName)
+                putExtra("DE55","")
             }
             startActivity(itn)
         }

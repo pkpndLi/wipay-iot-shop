@@ -81,7 +81,7 @@ public class EmvThread extends Thread {
                     "9F4005A000F0E001" + //terminal added performance
                     "DF260F9F02065F2A029A039C0195059F3704" + //default TDOL
                     "DF4001FF" + //script length limit
-                    "9F1A03015601" + //terminal country code
+                    "9F1A03076401" + //terminal country code
                     "9F1E081122334455667788" + //interface equipment serialnumber
                     "DF420101" + //whether support compulsory acceptance
                     "DF430101" + //whether support compulsory online
@@ -115,6 +115,9 @@ public class EmvThread extends Thread {
             "DF2006001000000000" + //contactless transaction limit amount
             "DF2106000000001000" + //contactless transaction CVM limit amount
             "9F7B06999999999999" ; //Electronic cash transaction limit amount
+
+    String [] Tagname={"0x82","0x84","0x95","0x9A","0x9C","0x5F2A","0x9F02","0x9F03","0x9F10",
+                       "0x9F1A","0x9F26","0x9F27","0x9F33","0x9F34","0x9F36","0x9F37","0x5F34"};
     int TagCardEXD_len;
     private byte[] EXDData;
     private int TagCardEXD;
@@ -270,7 +273,7 @@ public class EmvThread extends Thread {
                             int TagCardEXD_len;
                             byte EXDData[] = new byte[56];
                             int TagCardEXD = 0x5F24;
-
+                            byte BufData[] = new byte[56];
                             int TagPIN = 0xBD;
                             int TagKSN = 0xDF7F;
                             int PinData_len, KsnData_len;
@@ -305,6 +308,27 @@ public class EmvThread extends Thread {
                                 Log.e("EXDData", "i = " + i + "  " + EXDData[i]);
                                 Tag5F24_data += ByteUtil.byteToHexString(EXDData[i] /*& 0xFF*/);
                             }
+                            String DE55 = "";
+                            String [] name = new String[0];
+                            int test = 0;
+                            String len = "";
+                            for(int i = 0;i<Tagname.length;i++){
+
+                                int nametag = Integer.decode(Tagname[i]);
+                                String Data = "";
+                                int dataLen = emvcoHelper.EmvGetTagData(BufData, 56, nametag);
+                                for (int j = 0; j < dataLen; j++) {
+                                    Data += ByteUtil.byteToHexString(BufData[j]);
+                                    name = Tagname[i].split("x");
+
+                                    test=Data.length();
+                                }
+                                
+                                DE55 += name[1]+String.format("%02X", Data.length()/2)+Data;
+                                Log.i("Tagtest",Tagname[i]+" = "+Data+" = "+test);
+                            }
+                            Log.i("Tagtest",DE55);
+
                             PinData_len = emvcoHelper.EmvGetTagData(PinData, 56, TagPIN);
                             final String TagPin_data = ByteUtil.bytearrayToHexString(PinData, PinData_len);
                             KsnData_len = emvcoHelper.EmvGetTagData(KsnData, 56, TagKSN);
@@ -317,7 +341,7 @@ public class EmvThread extends Thread {
                             }
                             Log.e("VPOS", strEmvStatus + "\nCardNO:" + Tag5A_data + "\n" + "PIN0:" + TagPin_data + "\n" + "KSN0:" + Ksn_data);
                             Log.e("EMV PinData", "-TagPin_data=----" + TagPin_data);
-                            String Object = "{\"cardNO\": \"" + Tag5A_data + "\",\"cardEXD\": \"" + newTag5F24 + "\"}";
+                            String Object = "{\"cardNO\": \"" + Tag5A_data + "\",\"cardEXD\": \"" + newTag5F24 + "\",\"cardDE55\": \""+DE55+"\"}";
                             DataEmv emvTag = gson.fromJson(Object, DataEmv.class);
 //                                Log.i("test",emvTag.cardNO+"\t"+emvTag.cardEXD);
                             if (event != null) {
@@ -488,6 +512,13 @@ public class EmvThread extends Thread {
             m_bThreadFinished = true;
 
         }
+    }
+    private String bytelenTLV(String data){
+
+
+
+
+        return "";
     }
 
     private static final Pattern track2Pattern = Pattern.compile("^([0-9]{1,19})(?:[=Dd])([0-9]{4}|=)([0-9]{3}|=).*$");

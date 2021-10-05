@@ -44,6 +44,7 @@ class TransactionActivity : AppCompatActivity() {
     var cardNO:String = ""
     var cardEXD:String = ""
     var menuName:String = ""
+    var DE55:String = ""
 
     var output1: TextView? = null
     var output2: TextView? = null
@@ -64,8 +65,8 @@ class TransactionActivity : AppCompatActivity() {
 
 
 
-    private val HOST = "192.168.68.104"
-    var PORT = 3000
+    private val HOST = "192.168.1.9"
+    var PORT = 5001
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -82,6 +83,8 @@ class TransactionActivity : AppCompatActivity() {
             cardNO = getStringExtra("cardNO").toString()
             cardEXD = getStringExtra("cardEXD").toString()
             menuName = getStringExtra("menuName").toString()
+                DE55 = getStringExtra("DE55").toString()
+                Log.i("log_tag",DE55)
 
         }
 
@@ -166,7 +169,7 @@ class TransactionActivity : AppCompatActivity() {
 
         stan = readStan
         if(readStan == null){
-            stan = 1129
+            stan = 1147
         }
 
         reverseFlag = readFlagReverse
@@ -432,6 +435,7 @@ class TransactionActivity : AppCompatActivity() {
             .setField(FIELDS.F25_POS_ConditionCode, "00")
             .setField(FIELDS.F41_CA_TerminalID,hexStringToByteArray("3232323232323232"))
             .setField(FIELDS.F42_CA_ID,hexStringToByteArray("323232323232323232323232323232"))
+            .setField(FIELDS.F55_ICC,DE55)
             .setField(FIELDS.F62_Reserved_Private,hexStringToByteArray("303030343841"))
             .setHeader("6001208000")
             .build()
@@ -453,6 +457,7 @@ class TransactionActivity : AppCompatActivity() {
             .setField(FIELDS.F25_POS_ConditionCode, "00")
             .setField(FIELDS.F41_CA_TerminalID,hexStringToByteArray("3232323232323232"))
             .setField(FIELDS.F42_CA_ID,hexStringToByteArray("323232323232323232323232323232"))
+            .setField(FIELDS.F55_ICC,DE55)
             .setField(FIELDS.F62_Reserved_Private,hexStringToByteArray("303030343841"))
             .setHeader("6001208000")
             .build()
