@@ -26,8 +26,6 @@ class SettingAdapter (var ctx: Context, var ressource: Int, var Item: ArrayList<
 
         return view
 
-
-
     }
 
 

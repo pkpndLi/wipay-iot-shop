@@ -65,7 +65,7 @@ class TransactionActivity : AppCompatActivity() {
 
 
 
-    private val HOST = "192.168.1.9"
+    private val HOST = "192.168.68.110"
     var PORT = 5001
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -439,7 +439,6 @@ class TransactionActivity : AppCompatActivity() {
             .setField(FIELDS.F62_Reserved_Private,hexStringToByteArray("303030343841"))
             .setHeader("6001208000")
             .build()
-
     }
 
     fun reversalPacket(STAN: String): ISOMessage? {
