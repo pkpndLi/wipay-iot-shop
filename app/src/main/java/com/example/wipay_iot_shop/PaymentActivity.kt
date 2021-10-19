@@ -29,6 +29,7 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener,EmvEvent,McrEv
     lateinit var btn_SelectEMV : Button
     lateinit var btn_QR : Button
     lateinit var btn_SelectOK : Button
+    lateinit var btn_QR_crypto : Button
     lateinit var tv_InfoPayment : TextView
     var status:Int? = null
     var totalAmount:Int? = null
@@ -70,10 +71,12 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener,EmvEvent,McrEv
         btn_SelectEMV = findViewById(R.id.btn_SelectEMV)
         btn_QR = findViewById(R.id.btn_QR)
         btn_SelectOK = findViewById(R.id.btn_SelectOK)
+        btn_QR_crypto = findViewById(R.id.btn_QR_crypto)
         btn_SelectMag.setOnClickListener(this)
         btn_SelectEMV.setOnClickListener(this)
         btn_QR.setOnClickListener(this)
         btn_SelectOK.setOnClickListener(this)
+        btn_QR_crypto.setOnClickListener(this)
     }
     override fun onClick(view: View?) {
         when(view?.id){
@@ -82,7 +85,7 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener,EmvEvent,McrEv
                     btn_SelectMag.isEnabled = false
                     btn_SelectEMV.isEnabled = true
                     btn_QR.isEnabled = true
-
+                    btn_QR_crypto.isEnabled = true
                     Toast.makeText(applicationContext,"Click pay and swipe card",Toast.LENGTH_LONG).show()
                     status = 3
                 }catch (e: Exception){
@@ -92,6 +95,7 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener,EmvEvent,McrEv
 
             R.id.btn_SelectEMV->{
                 try {
+                    btn_QR_crypto.isEnabled = true
                     btn_SelectEMV.isEnabled = false
                     btn_QR.isEnabled = true
                     btn_SelectMag.isEnabled = true
@@ -104,11 +108,24 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener,EmvEvent,McrEv
             }
             R.id.btn_QR->{
                 try {
-
+                    btn_QR_crypto.isEnabled = true
                     btn_QR.isEnabled = false
                     btn_SelectEMV.isEnabled = true
                     btn_SelectMag.isEnabled = true
                     status = 2
+                    Toast.makeText(applicationContext,"click pay and scan QR ",Toast.LENGTH_LONG).show()
+                }catch (e: Exception){
+                }
+
+            }
+            R.id.btn_QR_crypto->{
+                try {
+                    btn_QR_crypto.isEnabled = false
+                    btn_QR.isEnabled = true
+                    btn_SelectEMV.isEnabled = true
+                    btn_SelectMag.isEnabled = true
+                    status = 4
+                    Toast.makeText(applicationContext,"click pay and scan QR ",Toast.LENGTH_LONG).show()
                 }catch (e: Exception){
 
                 }
@@ -125,6 +142,11 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener,EmvEvent,McrEv
                             }
                         }
                         2 -> {
+                            startActivity(Intent(this,QRpaymentActivity::class.java))
+//                            val itn =Intent(this,QRpaymentActivity::class.java).apply{
+//                                putExtra("processing",true)
+//                            }
+//                            startActivity(itn)
                         }
                         3->{
                             try {
