@@ -26,6 +26,4 @@ class QRpaymentActivity : AppCompatActivity() {
             e.printStackTrace()
         }
     }
-
-
 }

@@ -2,6 +2,7 @@ package com.example.wipay_iot_shop
 
 import android.content.DialogInterface
 import android.content.Intent
+import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
@@ -39,12 +40,17 @@ class TransactionActivity : AppCompatActivity() {
     var flagReverseDAO : FlagReverseDao? = null
     var stuckReverseDAO : StuckReverseDao? = null
 
+    private val MY_PREFS = "my_prefs"
+    private lateinit var sp: SharedPreferences
+
     var processing = false
     var totalAmount:Int? = null
     var cardNO:String = ""
     var cardEXD:String = ""
     var menuName:String = ""
     var DE55:String = ""
+
+    var initialStan: Int? = 1150
 
     var output1: TextView? = null
     var output2: TextView? = null
@@ -63,18 +69,23 @@ class TransactionActivity : AppCompatActivity() {
 
     var printer :Printer?=null
 
+    var settlementFlag:Boolean? = null
+    var firstTransactionFlag:Boolean? = null
+    var startId:Int = 0
 
 
-    private val HOST = "192.168.68.110"
-    var PORT = 5001
+    private val HOST = "192.168.1.16"
+    var PORT = 5000
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_transaction)
 
-
+        sp = getSharedPreferences(MY_PREFS, MODE_PRIVATE)
         val setOrder = findViewById<TextView>(R.id.order)
         val setAmount = findViewById<TextView>(R.id.amount)
+        settlementFlag =  sp.getBoolean("settlementFlag",false)
+        firstTransactionFlag = sp.getBoolean("firstTransactionFlag",true)
 
 
             intent.apply {
@@ -92,7 +103,9 @@ class TransactionActivity : AppCompatActivity() {
         setAmount.setText(totalAmount.toString())
 
         Log.i("log_tag","onCreate!!!")
-
+        Log.d("log_tag","on transactionActivity.")
+        Log.w("log_tag","settlementFlag: " + settlementFlag)
+        Log.w("log_tag","firstTransactionFlag: " + firstTransactionFlag)
 
     }
 
@@ -104,9 +117,16 @@ class TransactionActivity : AppCompatActivity() {
 //            "runDBthread",
 //            ""
 //        ))
+//      Check settlementFlag
+        if(settlementFlag == true){
 
-        setDialogS("","Comfirm your order.")
-        processing = true
+            setDialog("Transaction Error!!.","The sales report has not yet been completed.\n" +
+                    "Must return to complete the sales report first.")
+        }else{
+
+            setDialogS("","Comfirm your order.")
+            processing = true
+        }
 
         val handler = Handler(Looper.getMainLooper())
         handler.postDelayed({
@@ -169,7 +189,7 @@ class TransactionActivity : AppCompatActivity() {
 
         stan = readStan
         if(readStan == null){
-            stan = 1147
+            stan = initialStan
         }
 
         reverseFlag = readFlagReverse
@@ -237,7 +257,8 @@ class TransactionActivity : AppCompatActivity() {
 //                setDialog("Cenceling Success.","Successfully canceled the transaction.")
 
                 var reStan = codeUnpack(reReversal.toString(),11)
-                var reversalApprove = SaleEntity(null,reReversal.toString(), reStan!!.toInt())
+//                var reversalApprove = SaleEntity(null,reReversal.toString(), reStan!!.toInt())
+                var reversalApprove = SaleEntity(null,null, reStan!!.toInt())
 
                 Thread{
 
@@ -254,16 +275,13 @@ class TransactionActivity : AppCompatActivity() {
                 stan = stan?.plus(1)
                 sendTransactionProcess()
 
-            }else{
+            }else{      //transactionApprove
+
 
                 Log.i("log_tag", "Transaction Approve.")
 //                transactionApprove()
-                setDialog(null,"Transaction complete.")
-
+                setDialogApprove(null,"Transaction complete.")
                 var saleApprove = SaleEntity(null,saleMsg.toString(),stan)
-
-                printer = Printer(menuName,totalAmount)
-                printer!!.printSlip()
 
                 Thread{
 
@@ -272,10 +290,24 @@ class TransactionActivity : AppCompatActivity() {
                     saleDAO?.insertSale(saleApprove)
                     readSale = saleDAO?.getSale()?.isoMsg
                     readStan = saleDAO?.getSale()?.STAN
-                    Log.i("log_tag","saveTransaction :  " + readSale)
-                    Log.i("log_tag","saveSTAN : " + readStan)
-                }.start()
+                    startId = saleDAO?.getSale()?._id!!
 
+                    if(firstTransactionFlag == true){
+
+                        val editor: SharedPreferences.Editor = sp.edit()
+                        editor.putInt("startId", startId)
+                        editor.putBoolean("firstTransactionFlag", false)
+                        editor.commit()
+
+                        Log.i("log_tag","startId :  " + startId)
+                    }
+
+                    Log.w("log_tag","saveId :  " + startId)
+                    Log.w("log_tag","firstTransactionFlag: " + firstTransactionFlag)
+                    Log.w("log_tag","saveTransaction :  " + readSale)
+                    Log.w("log_tag","saveSTAN : " + readStan)
+
+                }.start()
             }
 
         }else{
@@ -562,5 +594,24 @@ class TransactionActivity : AppCompatActivity() {
             strBuilder.append(String.format("%02x", `val` and 0xff.toByte()))
         }
         return strBuilder.toString()
+    }
+    fun setDialogApprove(title: String?,msg: String?) {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle(title)
+        builder.setMessage(msg)
+        //builder.setPositiveButton("OK", DialogInterface.OnClickListener(function = x))
+        builder.setPositiveButton(getString(R.string.ok),
+            DialogInterface.OnClickListener{ dialog, which ->
+                Toast.makeText(applicationContext,android.R.string.ok, Toast.LENGTH_LONG).show()
+//                sendEmailProcess()
+                val itn =Intent(this,MenuActivity::class.java).apply{
+                    putExtra("totalAmount",totalAmount)
+                    putExtra("menuName",menuName)
+//                    putExtra("from","transAct")
+                }
+                startActivity(itn)
+            })
+        val dialog = builder.create()
+        dialog.show()
     }
 }

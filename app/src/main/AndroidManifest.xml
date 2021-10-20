@@ -21,6 +21,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Wipayiotshop">
         <activity
+            android:name=".ConfigActivity"
+            android:exported="true" />
+        <activity
             android:name=".QRpaymentActivity"
             android:exported="true" />
         <activity
@@ -60,6 +63,15 @@
         </activity>
         <activity
             android:name=".TransactionActivity"
+            android:exported="true">
+
+            <!-- <intent-filter> -->
+            <!-- <action android:name="android.intent.action.MAIN" /> -->
+            <!-- <category android:name="android.intent.category.LAUNCHER" /> -->
+            <!-- </intent-filter> -->
+        </activity>
+        <activity
+            android:name=".SettlementActivity"
             android:exported="true">
 
             <!-- <intent-filter> -->
