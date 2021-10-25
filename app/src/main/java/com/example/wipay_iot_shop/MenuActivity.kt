@@ -1,22 +1,32 @@
 package com.example.wipay_iot_shop
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.widget.ImageView
 import android.graphics.drawable.Drawable
-
-
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 
 
 class MenuActivity : AppCompatActivity() {
 
+    var MY_PERMISSIONS_STORAGE = arrayOf(
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.MOUNT_UNMOUNT_FILESYSTEMS"
+    )
+    val REQUEST_EXTERNAL_STORAGE = 1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_menu)
+
+        requestPermission()
 
         val listImg = findViewById<ImageView>(R.id.list)
         val goodsImg1 = findViewById<ImageView>(R.id.goods1)
@@ -63,5 +73,21 @@ class MenuActivity : AppCompatActivity() {
         return context.getResources().getDrawable(
             context.getResources().getIdentifier(name, "drawable", context.getPackageName())
         )
+    }
+
+    private fun requestPermission() {
+        //检测是否有写的权限
+        //Check if there is write permission
+        val checkCallPhonePermission = ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+        )
+        if (checkCallPhonePermission != PackageManager.PERMISSION_GRANTED) {
+            // 没有写文件的权限，去申请读写文件的权限，系统会弹出权限许可对话框
+            //Without the permission to Write, to apply for the permission to Read and Write, the system will pop up the permission dialog
+            ActivityCompat.requestPermissions(
+                this, MY_PERMISSIONS_STORAGE, REQUEST_EXTERNAL_STORAGE)
+        } else {
+        }
     }
 }

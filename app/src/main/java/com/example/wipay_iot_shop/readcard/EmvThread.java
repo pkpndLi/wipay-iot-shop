@@ -251,15 +251,14 @@ public class EmvThread extends Thread {
                             PosApiHelper.getInstance().SysLogSwitch(1);
                             emvcoHelper.EmvEnvParaInit();  // 1
                             emvcoHelper.EmvClearAllCapks();// 2
-                            emvcoHelper.EmvClearAllAIDS(); // 2
+//                            emvcoHelper.EmvClearAllAIDS(); // 2
                             capkbuf1_V = StringUtil.hexStringToBytes(EMV_V_Capkinput1);
                             emvcoHelper.EmvAddOneCAPK(capkbuf1_V, capkbuf1_V.length);
-                            Visaaid0 = StringUtil.hexStringToBytes(AID_input0);
-                            emvcoHelper.EmvAddOneAIDS(Visaaid0, Visaaid0.length);
-                            TermParabuf = StringUtil.hexStringToBytes(EMV_Term_input);
-                            emvcoHelper.EmvSaveTermParas(TermParabuf, TermParabuf.length, 0);
+//                            Visaaid0 = StringUtil.hexStringToBytes(AID_input0);
+//                            emvcoHelper.EmvAddOneAIDS(Visaaid0, Visaaid0.length);
+//                            TermParabuf = StringUtil.hexStringToBytes(EMV_Term_input);
+//                            emvcoHelper.EmvSaveTermParas(TermParabuf, TermParabuf.length, 0);
                             Log.e("VPOS", "ERROR    : EmvGetErrCode = " + ret);
-
                             ret = emvcoHelper.EmvKeyPadInit(context);
                             emvcoHelper.SetPinPadTime(20);  //set pinpad timeout is 20 seconds
                             if (ret != 0) {

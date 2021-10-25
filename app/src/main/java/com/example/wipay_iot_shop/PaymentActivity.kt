@@ -40,12 +40,6 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener,EmvEvent,McrEv
     var isOpen = false
 
 
-    var MY_PERMISSIONS_STORAGE = arrayOf(
-        "android.permission.READ_EXTERNAL_STORAGE",
-        "android.permission.WRITE_EXTERNAL_STORAGE",
-        "android.permission.MOUNT_UNMOUNT_FILESYSTEMS"
-    )
-    val REQUEST_EXTERNAL_STORAGE = 1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -135,11 +129,7 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener,EmvEvent,McrEv
                 if (status != null) {
                     when (status) {
                         1 -> {
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                                requestPermission()
-                            } else {
-                                testEmv()
-                            }
+                            testEmv()
                         }
                         2 -> {
                             startActivity(Intent(this,QRpaymentActivity::class.java))
@@ -171,23 +161,6 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener,EmvEvent,McrEv
         emvThread = EmvThread(TYPE_TEST_EMV,this,totalAmount!!)
         emvThread!!.setEmvEvent(this)
         emvThread!!.start()
-    }
-
-    private fun requestPermission() {
-        //检测是否有写的权限
-        //Check if there is write permission
-        val checkCallPhonePermission = ContextCompat.checkSelfPermission(
-            this,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
-        )
-        if (checkCallPhonePermission != PackageManager.PERMISSION_GRANTED) {
-            // 没有写文件的权限，去申请读写文件的权限，系统会弹出权限许可对话框
-            //Without the permission to Write, to apply for the permission to Read and Write, the system will pop up the permission dialog
-            ActivityCompat.requestPermissions(
-                this, MY_PERMISSIONS_STORAGE, REQUEST_EXTERNAL_STORAGE)
-        } else {
-            testEmv()
-        }
     }
 
     private val DISABLE_FUNCTION_LAUNCH_ACTION = "android.intent.action.DISABLE_FUNCTION_LAUNCH"

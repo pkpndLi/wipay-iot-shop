@@ -459,7 +459,7 @@ class TransactionActivity : AppCompatActivity() {
             .mti(MESSAGE_FUNCTION.Request, MESSAGE_ORIGIN.Acquirer)
             .processCode("000000")
             .setField(FIELDS.F2_PAN, cardNO)
-            .setField(FIELDS.F4_AmountTransaction, totalAmount.toString())
+            .setField(FIELDS.F4_AmountTransaction, totalamount(totalAmount!!.toDouble() ))
             .setField(FIELDS.F11_STAN, STAN)
             .setField(FIELDS.F14_ExpirationDate, cardEXD)
             .setField(FIELDS.F22_EntryMode, "0010")
@@ -480,7 +480,7 @@ class TransactionActivity : AppCompatActivity() {
             .mti(MESSAGE_FUNCTION.Request, MESSAGE_ORIGIN.Acquirer)
             .processCode("000000")
             .setField(FIELDS.F2_PAN, cardNO)
-            .setField(FIELDS.F4_AmountTransaction, totalAmount.toString())
+            .setField(FIELDS.F4_AmountTransaction, totalamount(totalAmount!!.toDouble()))
             .setField(FIELDS.F11_STAN, STAN)
             .setField(FIELDS.F14_ExpirationDate, cardEXD)
             .setField(FIELDS.F22_EntryMode, "0010")
@@ -613,5 +613,13 @@ class TransactionActivity : AppCompatActivity() {
             })
         val dialog = builder.create()
         dialog.show()
+    }
+
+    fun totalamount(Totalamount : Double ):String{
+
+        var amount : List<String> = String.format("%.2f",Totalamount).split(".")
+        var Amount = amount[0]+amount[1]
+
+        return Amount
     }
 }
