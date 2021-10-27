@@ -50,7 +50,7 @@ class TransactionActivity : AppCompatActivity() {
     var menuName:String = ""
     var DE55:String = ""
 
-    var initialStan: Int? = 1150
+    var initialStan: Int? = 0
 
     var output1: TextView? = null
     var output2: TextView? = null
@@ -73,9 +73,10 @@ class TransactionActivity : AppCompatActivity() {
     var firstTransactionFlag:Boolean? = null
     var startId:Int = 0
 
-
-    private val HOST = "192.168.1.16"
-    var PORT = 5000
+    private val HOST = "192.168.68.110"
+    var PORT = 5001
+//    private val HOST = "192.168.68.120"
+//    var PORT = 5000
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -465,8 +466,8 @@ class TransactionActivity : AppCompatActivity() {
             .setField(FIELDS.F22_EntryMode, "0010")
             .setField(FIELDS.F24_NII_FunctionCode, "120")
             .setField(FIELDS.F25_POS_ConditionCode, "00")
-            .setField(FIELDS.F41_CA_TerminalID,hexStringToByteArray("3232323232323232"))
-            .setField(FIELDS.F42_CA_ID,hexStringToByteArray("323232323232323232323232323232"))
+            .setField(FIELDS.F41_CA_TerminalID,hexStringToByteArray("3535353535353535"))
+            .setField(FIELDS.F42_CA_ID,hexStringToByteArray("353535353535353535353535353535"))
             .setField(FIELDS.F55_ICC,DE55)
             .setField(FIELDS.F62_Reserved_Private,hexStringToByteArray("303030343841"))
             .setHeader("6001208000")
@@ -486,8 +487,8 @@ class TransactionActivity : AppCompatActivity() {
             .setField(FIELDS.F22_EntryMode, "0010")
             .setField(FIELDS.F24_NII_FunctionCode, "120")
             .setField(FIELDS.F25_POS_ConditionCode, "00")
-            .setField(FIELDS.F41_CA_TerminalID,hexStringToByteArray("3232323232323232"))
-            .setField(FIELDS.F42_CA_ID,hexStringToByteArray("323232323232323232323232323232"))
+            .setField(FIELDS.F41_CA_TerminalID,hexStringToByteArray("3535353535353535"))
+            .setField(FIELDS.F42_CA_ID,hexStringToByteArray("353535353535353535353535353535"))
             .setField(FIELDS.F55_ICC,DE55)
             .setField(FIELDS.F62_Reserved_Private,hexStringToByteArray("303030343841"))
             .setHeader("6001208000")
@@ -501,8 +502,8 @@ class TransactionActivity : AppCompatActivity() {
             .mti(MESSAGE_FUNCTION.Request, MESSAGE_ORIGIN.Acquirer)
             .processCode("990000")
             .setField(FIELDS.F24_NII_FunctionCode,"120")
-            .setField(FIELDS.F41_CA_TerminalID,hexStringToByteArray("3232323232323232"))
-            .setField(FIELDS.F42_CA_ID,hexStringToByteArray("323232323232323232323232323232"))
+            .setField(FIELDS.F41_CA_TerminalID,hexStringToByteArray("3535353535353535"))
+            .setField(FIELDS.F42_CA_ID,hexStringToByteArray("353535353535353535353535353535"))
             .setField(FIELDS.F62_Reserved_Private,hexStringToByteArray("303030343841"))
             .setHeader("6001208000")
             .build()

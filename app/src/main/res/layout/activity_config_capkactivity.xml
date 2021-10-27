@@ -6,4 +6,236 @@
     android:layout_height="match_parent"
     tools:context=".ConfigCAPKActivity">
 
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+
+            <TextView
+                android:id="@+id/textView11"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="CA Public Key Config"
+                android:textSize="30dp"
+                android:visibility="visible" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="250dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:text="RID" />
+
+                <EditText
+                    android:id="@+id/edit_9F06"
+                    android:layout_width="350dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:ems="10"
+                    android:inputType="textPersonName"
+                    android:text="9F0605A000000003" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="250dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:text="CAPK index" />
+
+                <EditText
+                    android:id="@+id/edit_9F22"
+                    android:layout_width="350dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:ems="10"
+                    android:inputType="textPersonName"
+                    android:text="9F220108" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="250dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:text="public key algorithm" />
+
+                <EditText
+                    android:id="@+id/edit_DF07"
+                    android:layout_width="350dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:ems="10"
+                    android:inputType="textPersonName"
+                    android:text="DF070101" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="250dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:text="hash algorithm" />
+
+                <EditText
+                    android:id="@+id/edit_DF06"
+                    android:layout_width="350dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:ems="10"
+                    android:inputType="textPersonName"
+                    android:text="DF060101" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="250dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:text="Modulus " />
+
+                <EditText
+                    android:id="@+id/edit_DF02"
+                    android:layout_width="350dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:ems="10"
+                    android:inputType="textPersonName"
+                    android:text="DF0281B0D9FD6ED75D51D0E30664BD157023EAA1FFA871E4DA65672B863D255E81E137A51DE4F72BCC9E44ACE12127F87E263D3AF9DD9CF35CA4A7B01E907000BA85D24954C2FCA3074825DDD4C0C8F186CB020F683E02F2DEAD3969133F06F7845166ACEB57CA0FC2603445469811D293BFEFBAFAB57631B3DD91E796BF850A25012F1AE38F05AA5C4D6D03B1DC2E568612785938BBC9B3CD3A910C1DA55A5A9218ACE0F7A21287752682F15832A678D6E1ED0B" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="250dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:text="exponent" />
+
+                <EditText
+                    android:id="@+id/edit_DF04"
+                    android:layout_width="350dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:ems="10"
+                    android:inputType="textPersonName"
+                    android:text="DF040103" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="250dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:text="CAPK expired date" />
+
+                <EditText
+                    android:id="@+id/edit_DF05"
+                    android:layout_width="350dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:ems="10"
+                    android:inputType="textPersonName"
+                    android:text="DF05083230323431323331" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="250dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:text="checksum " />
+
+                <EditText
+                    android:id="@+id/edit_DF03"
+                    android:layout_width="350dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:ems="10"
+                    android:inputType="textPersonName"
+                    android:text="DF031420D213126955DE205ADC2FD2822BD22DE21CF9A8" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btn_clearCAPK_contact"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="clear capk contact" />
+
+                <Button
+                    android:id="@+id/btn_addCAPK_contact"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="add capk contact" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btn_clearCAPK_contactless"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="clear capk contactless" />
+
+                <Button
+                    android:id="@+id/btn_addCAPK_contactless"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="add capk contactless" />
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/btn_ok"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="ok" />
+        </LinearLayout>
+    </ScrollView>
 </androidx.constraintlayout.widget.ConstraintLayout>

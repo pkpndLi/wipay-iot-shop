@@ -64,12 +64,10 @@ class ConfigAIDActivity : AppCompatActivity() {
         }
         btn_clearAID_contact.setOnClickListener{
             EMVCOHelper.EmvClearAllAIDS()
-            EMVCOHelper.EmvKernelInit()
         }
         btn_ok.setOnClickListener{
             startActivity(Intent(this,ConfigActivity::class.java))
         }
-
     }
 
 

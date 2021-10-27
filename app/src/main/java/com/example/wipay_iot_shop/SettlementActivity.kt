@@ -77,7 +77,7 @@ class SettlementActivity : AppCompatActivity() {
     var printer :Printer?=null
     //    private val HOST = "192.168.43.195"
 //    var PORT = 5000
-    private val HOST = "192.168.1.16"
+    private val HOST = "192.168.68.120"
     var PORT = 5000
 
 
@@ -332,11 +332,11 @@ class SettlementActivity : AppCompatActivity() {
             .reconciliation()
             .setLeftPadding(0x00.toByte())
             .mti(MESSAGE_FUNCTION.Request, MESSAGE_ORIGIN.Acquirer)
-            .processCode("920000")
+            .processCode("960000")
             .setField(FIELDS.F11_STAN, stan.toString())
             .setField(FIELDS.F24_NII_FunctionCode, "120")
-            .setField(FIELDS.F41_CA_TerminalID,hexStringToByteArray("3232323232323232"))
-            .setField(FIELDS.F42_CA_ID,hexStringToByteArray("323232323232323232323232323232"))
+            .setField(FIELDS.F41_CA_TerminalID,hexStringToByteArray("3535353535353535"))
+            .setField(FIELDS.F42_CA_ID,hexStringToByteArray("353535353535353535353535353535"))
             .setField(FIELDS.F60_Reserved_National,"0006303030313432")
             .setField(FIELDS.F62_Reserved_Private,hexStringToByteArray("303030343841"))
             .setField(FIELDS.F63_Reserved_Private,hexStringToByteArray(batchTotals.toString()))
