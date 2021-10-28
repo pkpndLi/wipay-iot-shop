@@ -73,7 +73,7 @@ class TransactionActivity : AppCompatActivity() {
     var firstTransactionFlag:Boolean? = null
     var startId:Int = 0
 
-    private val HOST = "192.168.68.110"
+    private val HOST = "192.168.1.9"
     var PORT = 5001
 //    private val HOST = "192.168.68.120"
 //    var PORT = 5000
@@ -333,7 +333,7 @@ class TransactionActivity : AppCompatActivity() {
                 }
 
                 Log.i("log_tag", "Error code: " + responseCode)
-                var saleApprove = SaleEntity(null,null.toString(),stan)
+                var saleApprove = SaleEntity(null,saleMsg.toString(),stan)
 
                 Thread{
 
@@ -468,7 +468,7 @@ class TransactionActivity : AppCompatActivity() {
             .setField(FIELDS.F25_POS_ConditionCode, "00")
             .setField(FIELDS.F41_CA_TerminalID,hexStringToByteArray("3535353535353535"))
             .setField(FIELDS.F42_CA_ID,hexStringToByteArray("353535353535353535353535353535"))
-            .setField(FIELDS.F55_ICC,DE55)
+//            .setField(FIELDS.F55_ICC,DE55)
             .setField(FIELDS.F62_Reserved_Private,hexStringToByteArray("303030343841"))
             .setHeader("6001208000")
             .build()
@@ -489,7 +489,7 @@ class TransactionActivity : AppCompatActivity() {
             .setField(FIELDS.F25_POS_ConditionCode, "00")
             .setField(FIELDS.F41_CA_TerminalID,hexStringToByteArray("3535353535353535"))
             .setField(FIELDS.F42_CA_ID,hexStringToByteArray("353535353535353535353535353535"))
-            .setField(FIELDS.F55_ICC,DE55)
+//            .setField(FIELDS.F55_ICC,DE55)
             .setField(FIELDS.F62_Reserved_Private,hexStringToByteArray("303030343841"))
             .setHeader("6001208000")
             .build()

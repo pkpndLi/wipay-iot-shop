@@ -77,8 +77,8 @@ class SettlementActivity : AppCompatActivity() {
     var printer :Printer?=null
     //    private val HOST = "192.168.43.195"
 //    var PORT = 5000
-    private val HOST = "192.168.68.120"
-    var PORT = 5000
+    private val HOST = "192.168.1.9"
+    var PORT = 5001
 
 
     //get initial value from MenuActivity
@@ -121,7 +121,7 @@ class SettlementActivity : AppCompatActivity() {
             editor.commit()
 
             stan = readStan?.plus(1)
-            batchTotals = buildBatchTotals(saleCount!!, saleAmount!!.toDouble())
+            batchTotals = buildBatchTotals(saleCount!!, amount(saleAmount!!))
             //test settlementPacket
             settlementFlag =  sp.getBoolean("settlementFlag",false)
             Log.w(log,"settlementFlag: " + settlementFlag)
@@ -332,12 +332,12 @@ class SettlementActivity : AppCompatActivity() {
             .reconciliation()
             .setLeftPadding(0x00.toByte())
             .mti(MESSAGE_FUNCTION.Request, MESSAGE_ORIGIN.Acquirer)
-            .processCode("960000")
+            .processCode("920000")
             .setField(FIELDS.F11_STAN, stan.toString())
             .setField(FIELDS.F24_NII_FunctionCode, "120")
             .setField(FIELDS.F41_CA_TerminalID,hexStringToByteArray("3535353535353535"))
             .setField(FIELDS.F42_CA_ID,hexStringToByteArray("353535353535353535353535353535"))
-            .setField(FIELDS.F60_Reserved_National,"0006303030313432")
+            .setField(FIELDS.F60_Reserved_National,"000142")
             .setField(FIELDS.F62_Reserved_Private,hexStringToByteArray("303030343841"))
             .setField(FIELDS.F63_Reserved_Private,hexStringToByteArray(batchTotals.toString()))
             .setHeader("6001208000")
@@ -456,7 +456,17 @@ class SettlementActivity : AppCompatActivity() {
         return responseCode
     }
 
+
+    fun amount(amount : Int):Double{
+        var a = amount.toString()
+        a = a.substring(0,a.length-2)
+        Log.i("testtest",""+a.toDouble())
+        return a.toDouble()
+    }
+
+
     fun buildBatchTotals(Salecount :Int,Saleamount :Double):String{
+
         var DE63 =""
         var salecount = Salecount.toString().padStart(3,'0')
         var saleamount = String.format("%.2f",Saleamount)
