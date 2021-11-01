@@ -14,10 +14,7 @@ import androidx.appcompat.app.AlertDialog
 import com.example.testpos.database.transaction.*
 import com.example.testpos.evenbus.data.MessageEvent
 import com.example.wipay_iot_shop.printer.Printer
-import com.example.wipay_iot_shop.transaction.FlagReverseDao
-import com.example.wipay_iot_shop.transaction.FlagReverseEntity
-import com.example.wipay_iot_shop.transaction.StuckReverseDao
-import com.example.wipay_iot_shop.transaction.StuckReverseEntity
+import com.example.wipay_iot_shop.transaction.*
 import com.imohsenb.ISO8583.builders.ISOClientBuilder
 import com.imohsenb.ISO8583.builders.ISOMessageBuilder
 import com.imohsenb.ISO8583.entities.ISOMessage
@@ -66,16 +63,19 @@ class TransactionActivity : AppCompatActivity() {
     var stuckReverse :Boolean? = null
     var readFlagReverse :Boolean? = null
     var readStuckReverse :Boolean? = null
-
+    var responseDAO : ResponseDao? = null
+    var readResponseMsg:String? = null
     var printer :Printer?=null
 
     var settlementFlag:Boolean? = null
     var firstTransactionFlag:Boolean? = null
     var startId:Int = 0
 
-    private val HOST = "192.168.1.9"
-    var PORT = 5001
-//    private val HOST = "192.168.68.120"
+//    private val HOST = "192.168.68.225"
+//    var PORT = 5000
+    private val HOST = "203.148.160.47"
+    var PORT = 7500
+//    private val HOST = "192.168.68.119"
 //    var PORT = 5000
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -160,6 +160,7 @@ class TransactionActivity : AppCompatActivity() {
         saleDAO = appDatabase?.saleDao()
         flagReverseDAO = appDatabase?.flagReverseDao()
         stuckReverseDAO = appDatabase?.stuckReverseDao()
+        responseDAO = appDatabase?.responseDao()
     }
 
         @Subscribe(threadMode = ThreadMode.MAIN)
@@ -243,13 +244,15 @@ class TransactionActivity : AppCompatActivity() {
         Log.i("log_tag", "Response Message:" + event.message)
         responseCode = codeUnpack(event.message,39)
         output2?.setText("response code: " + responseCode)
+        var responseMsg = event.message
         Log.i("log_tag", "response code:"+ responseCode)
-
+        //
         if(responseCode == "3030"){
+            //ไม่ว่าจะเข้าเงื่อนไข if หรือ else ข้างล่างก็เป็นการปลด reverse เหมือนกัน
             reverseFlag = false
             var flagReverse = FlagReverseEntity(null, reverseFlag)
 
-            if(stuckReverse == true){
+            if(stuckReverse == true){ //manage reverse approve
 
                 Log.i("log_tag", "Reversal Approve.")
                 stuckReverse = false
@@ -259,7 +262,9 @@ class TransactionActivity : AppCompatActivity() {
 
                 var reStan = codeUnpack(reReversal.toString(),11)
 //                var reversalApprove = SaleEntity(null,reReversal.toString(), reStan!!.toInt())
+                //รายการที่ทำ reverse สำเร็จต้อง save stan เอาไว้ เพื่อให้ stan ต่อเนื่อง
                 var reversalApprove = SaleEntity(null,null, reStan!!.toInt())
+                var responseReversal = ResponseEntity(null,null)
 
                 Thread{
 
@@ -267,29 +272,37 @@ class TransactionActivity : AppCompatActivity() {
                     flagReverseDAO?.insertFlagReverse(flagReverse)
                     stuckReverseDAO?.insertStuckReverse(reverseStuck)
                     saleDAO?.insertSale(reversalApprove)
+                    responseDAO?.insertResponseMsg(responseReversal)
                     readSale = saleDAO?.getSale()?.isoMsg
+                    readResponseMsg = responseDAO?.getResponseMsg()?.responseMsg
                     readStan = saleDAO?.getSale()?.STAN
                     Log.i("log_tag","saveReverse-sale :  " + readSale)
                     Log.i("log_tag","saveSTAN : " + readStan)
+                    Log.w("log_tag","saveResponse : " + readResponseMsg)
 
                 }.start()
                 stan = stan?.plus(1)
                 sendTransactionProcess()
 
-            }else{      //transactionApprove
+            }else{      //manage transactionApprove
 
 
-                Log.i("log_tag", "Transaction Approve.")
+
 //                transactionApprove()
                 setDialogApprove(null,"Transaction complete.")
                 var saleApprove = SaleEntity(null,saleMsg.toString(),stan)
+                var responseSaleApprove = ResponseEntity(null,responseMsg)
+                Log.i("log_tag", "Transaction Approve." + responseSaleApprove)
+
 
                 Thread{
 
                     accessDatabase()
                     flagReverseDAO?.insertFlagReverse(flagReverse)
                     saleDAO?.insertSale(saleApprove)
+                    responseDAO?.insertResponseMsg(responseSaleApprove)
                     readSale = saleDAO?.getSale()?.isoMsg
+                    readResponseMsg = responseDAO?.getResponseMsg()?.responseMsg
                     readStan = saleDAO?.getSale()?.STAN
                     startId = saleDAO?.getSale()?._id!!
 
@@ -304,22 +317,23 @@ class TransactionActivity : AppCompatActivity() {
                     }
 
                     Log.w("log_tag","saveId :  " + startId)
-                    Log.w("log_tag","firstTransactionFlag: " + firstTransactionFlag)
+                    Log.w("log_tag","firstTransactionFlag: " + sp.getBoolean("firstTransactionFlag",false))
                     Log.w("log_tag","saveTransaction :  " + readSale)
                     Log.w("log_tag","saveSTAN : " + readStan)
+                    Log.w("log_tag","saveResponse : " + readResponseMsg)
 
                 }.start()
             }
 
         }else{
 
-            if(stuckReverse == true){
+            if(stuckReverse == true){ //ยังติด reverse อยู่
 
                 errorCode(responseCode,null)
 
-            } else{
+            } else{ //manage Transaction Error
 
-                reverseFlag = false
+                reverseFlag = false  //กรณีมี response แต่ transaction error
                 var flagReverse = FlagReverseEntity(null, reverseFlag)
 
                 if(responseCode == "3934"){
@@ -333,18 +347,26 @@ class TransactionActivity : AppCompatActivity() {
                 }
 
                 Log.i("log_tag", "Error code: " + responseCode)
-                var saleApprove = SaleEntity(null,saleMsg.toString(),stan)
+                var transactionError = SaleEntity(null,null,stan)
+                var responseSaleError = ResponseEntity(null,null)
 
                 Thread{
 
                     accessDatabase()
 
                     flagReverseDAO?.insertFlagReverse(flagReverse)
-                    saleDAO?.insertSale(saleApprove)
+                    saleDAO?.insertSale(transactionError)
+                    responseDAO?.insertResponseMsg(responseSaleError)
+                    readResponseMsg = responseDAO?.getResponseMsg()?.responseMsg
                     readSale = saleDAO?.getSale()?.isoMsg
                     readStan = saleDAO?.getSale()?.STAN
-                    Log.i("log_tag","saveTransaction :  " + readSale)
-                    Log.i("log_tag","saveSTAN : " + readStan)
+                    startId = saleDAO?.getSale()?._id!!
+
+
+                    Log.w("log_tag","saveTransaction :  " + readSale)
+                    Log.w("log_tag","saveSTAN : " + readStan)
+                    Log.w("log_tag","saveResponse : " + readResponseMsg)
+
 
                 }.start()
 
@@ -352,9 +374,13 @@ class TransactionActivity : AppCompatActivity() {
 
         }
 
+//        val policy = ThreadPolicy.Builder().permitAll().build()
+//        StrictMode.setThreadPolicy(policy)
+
         Log.i("log_tag", "reverseFlag:  " + reverseFlag)
 
     }
+
 
     fun sendTransactionProcess(){
 
