@@ -9,8 +9,10 @@ import com.amazonaws.mobileconnectors.iot.AWSIotMqttNewMessageCallback
 import java.lang.Exception
 
 class AwsIoT : AWSIotMqttClientStatusCallback, AWSIotMqttNewMessageCallback{
-    val keyStoreName = ""
-    val keyStorePath = ""
+    val keyStoreName = "Wipay_keystore"
+    val keyStorePath = "12345678"
+    val aliases_M = "master"
+    val aliases_C = "Clam"
     val LOG_TAG = ""
 
     private val mqtt: AWSIotMqttManager? = null
@@ -21,8 +23,8 @@ class AwsIoT : AWSIotMqttClientStatusCallback, AWSIotMqttNewMessageCallback{
     fun connect(aliases: String?, password: String?): AWSIotMqttManager {
         val keyStore = AWSIotKeystoreHelper.getIotKeystore(
             aliases,
-            this.keyStorePath,
-            this.keyStoreName,
+            keyStorePath,
+            keyStoreName,
             password
         )
         Log.e(LOG_TAG, "connect")
@@ -38,18 +40,19 @@ class AwsIoT : AWSIotMqttClientStatusCallback, AWSIotMqttNewMessageCallback{
     fun saveKeyAndCertificate(privateKey: String?, certificate: String?, aliases: String?, password: String?) {
         if (AWSIotKeystoreHelper.isKeystorePresent(keyStorePath, keyStoreName)) {
             if (AWSIotKeystoreHelper.keystoreContainsAlias(
-                    aliases,
+                    aliases_M,
                     keyStorePath, keyStoreName, password
                 )
             ) {
-                AWSIotKeystoreHelper.deleteKeystoreAlias(
-                    aliases,
-                    keyStorePath, keyStoreName, password
-                )
-                AWSIotKeystoreHelper.saveCertificateAndPrivateKey(
-                    aliases, certificate, privateKey,
-                    keyStorePath, keyStoreName, password
-                )
+                if (AWSIotKeystoreHelper.keystoreContainsAlias(
+                        aliases_C,
+                        keyStorePath, keyStoreName, password
+                    )
+                ){
+
+                }
+
+
             } else {
                 AWSIotKeystoreHelper.deleteKeystoreAlias(
                     aliases,
@@ -91,7 +94,6 @@ class AwsIoT : AWSIotMqttClientStatusCallback, AWSIotMqttNewMessageCallback{
             AWSIotMqttClientStatus.Reconnecting -> {
                 Log.e(LOG_TAG, "reconnecting")
             }
-
 
         }
     }
