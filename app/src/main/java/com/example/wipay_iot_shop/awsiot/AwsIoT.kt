@@ -51,8 +51,6 @@ class AwsIoT : AWSIotMqttClientStatusCallback, AWSIotMqttNewMessageCallback{
                 ){
 
                 }
-
-
             } else {
                 AWSIotKeystoreHelper.deleteKeystoreAlias(
                     aliases,

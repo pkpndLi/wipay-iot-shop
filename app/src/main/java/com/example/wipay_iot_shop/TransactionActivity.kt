@@ -73,8 +73,8 @@ class TransactionActivity : AppCompatActivity() {
 
 //    private val HOST = "192.168.68.225"
 //    var PORT = 5000
-    private val HOST = "203.148.160.47"
-    var PORT = 7500
+private val HOST = "192.168.1.184"
+    var PORT = 5000
 //    private val HOST = "192.168.68.119"
 //    var PORT = 5000
 

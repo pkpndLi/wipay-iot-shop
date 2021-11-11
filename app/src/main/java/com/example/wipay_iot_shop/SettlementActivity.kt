@@ -86,8 +86,8 @@ class SettlementActivity : AppCompatActivity() {
 
 //    private val HOST = "192.168.68.225"
 //    var PORT = 5000
-    private val HOST = "203.148.160.47"
-    var PORT = 7500
+private val HOST = "192.168.1.184"
+    var PORT = 5000
 
     var settlementFlag:Boolean? = null
     var firstTransactionFlag:Boolean? = null
@@ -108,7 +108,6 @@ class SettlementActivity : AppCompatActivity() {
          saleCountTxt = findViewById<TextView>(R.id.saleCountTxt)
          saleAmountTxt = findViewById<TextView>(R.id.sumAmountTxt)
 
-        var batchBtn = findViewById<Button>(R.id.batchBtn)
 
         intent.apply {
             lastSettlementFlag = getBooleanExtra("lastSettlementFlag",false)
@@ -172,10 +171,6 @@ class SettlementActivity : AppCompatActivity() {
             }
         }
 
-        batchBtn.setOnClickListener {
-
-
-        }
     }
 
     override fun onStart() {

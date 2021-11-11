@@ -72,8 +72,8 @@ class BatchUploadActivity : AppCompatActivity() {
 //    var PORT = 5000
     //    private val HOST = "192.168.43.195"
 //    var PORT = 5000
-    private val HOST = "203.148.160.47"
-    var PORT = 7500
+private val HOST = "192.168.1.184"
+    var PORT = 5000
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
