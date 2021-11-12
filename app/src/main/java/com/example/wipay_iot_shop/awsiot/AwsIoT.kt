@@ -1,5 +1,6 @@
 package com.example.wipay_iot_shop.awsiot
 
+import android.provider.Settings
 import android.util.Log
 import com.amazonaws.mobileconnectors.iot.AWSIotKeystoreHelper
 import com.amazonaws.mobileconnectors.iot.AWSIotMqttClientStatusCallback
@@ -8,21 +9,25 @@ import com.amazonaws.mobileconnectors.iot.AWSIotMqttManager
 import com.amazonaws.mobileconnectors.iot.AWSIotMqttNewMessageCallback
 import java.lang.Exception
 
-class AwsIoT : AWSIotMqttClientStatusCallback, AWSIotMqttNewMessageCallback{
+class AwsIoT (keyStorePath:String): AWSIotMqttClientStatusCallback, AWSIotMqttNewMessageCallback{
     val keyStoreName = "Wipay_keystore"
-    val keyStorePath = "12345678"
     val aliases_M = "master"
     val aliases_C = "Clam"
     val LOG_TAG = ""
+    val password = "12345678"
+    val keyStorePath = keyStorePath
+    val clientID = ""
+    val host = ""
+    // init mqtt instance
 
-    private val mqtt: AWSIotMqttManager? = null
+    private val mqtt: AWSIotMqttManager? = AWSIotMqttManager("device-" + clientID, host)
 
 
 
     @Throws(Exception::class)
-    fun connect(aliases: String?, password: String?): AWSIotMqttManager {
+    fun connect(): AWSIotMqttManager {
         val keyStore = AWSIotKeystoreHelper.getIotKeystore(
-            aliases,
+            aliases_M,
             keyStorePath,
             keyStoreName,
             password

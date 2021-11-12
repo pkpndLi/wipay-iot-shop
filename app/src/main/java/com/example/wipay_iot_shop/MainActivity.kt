@@ -3,6 +3,7 @@ package com.example.wipay_iot_shop
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import android.widget.Button
 import android.widget.EditText
@@ -14,7 +15,6 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
         val btn_SignIn = findViewById(com.example.wipay_iot_shop.R.id.btn_SignIn) as Button
         val et_Email = findViewById<EditText>(R.id.et_Email)
         val et_Password = findViewById<EditText>(R.id.et_Password)
@@ -30,6 +30,8 @@ class MainActivity : AppCompatActivity() {
             }
             Log.i("test","email :"+email+"\t password :"+password)
         }
+
+
     }
 
 

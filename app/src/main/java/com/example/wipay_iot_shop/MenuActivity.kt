@@ -1,6 +1,7 @@
 package com.example.wipay_iot_shop
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -9,8 +10,14 @@ import android.os.Bundle
 import android.view.View
 import android.widget.ImageView
 import android.graphics.drawable.Drawable
+import android.provider.Settings
+import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.annotation.RequiresApi
+import android.os.Build
+import java.lang.Exception
+import java.lang.reflect.Method
 
 
 class MenuActivity : AppCompatActivity() {
@@ -27,7 +34,8 @@ class MenuActivity : AppCompatActivity() {
         setContentView(R.layout.activity_menu)
 
         requestPermission()
-
+        val devID = Settings.Secure.getString(this.contentResolver, Settings.Secure.ANDROID_ID)
+        Log.i("testtest", getSerialNumber().toString())
         val listImg = findViewById<ImageView>(R.id.list)
         val goodsImg1 = findViewById<ImageView>(R.id.goods1)
         val goodsImg2 = findViewById<ImageView>(R.id.goods2)
@@ -89,5 +97,26 @@ class MenuActivity : AppCompatActivity() {
                 this, MY_PERMISSIONS_STORAGE, REQUEST_EXTERNAL_STORAGE)
         } else {
         }
+    }
+
+
+    fun getSerialNumber(): String? {
+        var serialNumber: String?
+        try {
+            val c = Class.forName("android.os.SystemProperties")
+            val get: Method = c.getMethod("get", String::class.java)
+            serialNumber = get.invoke(c, "gsm.sn1").toString()
+            if (serialNumber == "") serialNumber = get.invoke(c, "ril.serialnumber").toString()
+            if (serialNumber == "") serialNumber = get.invoke(c, "ro.serialno").toString()
+            if (serialNumber == "") serialNumber = get.invoke(c, "sys.serialnumber").toString()
+            if (serialNumber == "") serialNumber = Build.SERIAL
+
+            // If none of the methods above worked
+            if (serialNumber == "") serialNumber = null
+        } catch (e: Exception) {
+            e.printStackTrace()
+            serialNumber = null
+        }
+        return serialNumber
     }
 }
