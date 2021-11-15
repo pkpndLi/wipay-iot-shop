@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.ColorSpace.connect
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
@@ -16,24 +17,36 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.annotation.RequiresApi
 import android.os.Build
+import android.system.Os.connect
+import com.example.wipay_iot_shop.helper.AWSIoTEvent
+import com.example.wipay_iot_shop.helper.AWSIoTHelper
+import com.example.wipay_iot_shop.helper.Certificate
+import com.example.wipay_iot_shop.helper.data.CertificateObject
+import com.example.wipay_iot_shop.helper.data.RegisterObject
+import com.example.wipay_iot_shop.helper.data.SetTView
 import java.lang.Exception
 import java.lang.reflect.Method
 
 
-class MenuActivity : AppCompatActivity() {
-
+class MenuActivity : AppCompatActivity(), AWSIoTEvent {
     var MY_PERMISSIONS_STORAGE = arrayOf(
         "android.permission.READ_EXTERNAL_STORAGE",
         "android.permission.WRITE_EXTERNAL_STORAGE",
-        "android.permission.MOUNT_UNMOUNT_FILESYSTEMS"
+        "android.permission.MOUNT_UNMOUNT_FILESYSTEMS",
+        "android.permission.READ_PRIVILEGED_PHONE_STATE"
     )
     val REQUEST_EXTERNAL_STORAGE = 1
+
+    private var awsHelper: AWSIoTHelper? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_menu)
 
         requestPermission()
+
+        awsconnect()
+
         val devID = Settings.Secure.getString(this.contentResolver, Settings.Secure.ANDROID_ID)
         Log.i("testtest", getSerialNumber().toString())
         val listImg = findViewById<ImageView>(R.id.list)
@@ -118,5 +131,43 @@ class MenuActivity : AppCompatActivity() {
             serialNumber = null
         }
         return serialNumber
+    }
+
+    fun awsconnect(){
+
+        val keyStorePath = filesDir.path
+        // init aws helper
+        awsHelper = AWSIoTHelper(
+            "a33gna0t4ob4fa-ats.iot.ap-southeast-1.amazonaws.com",
+            keyStorePath,
+            "keystore",
+            "POS_CS10"
+        )
+
+        awsHelper!!.setProvisioningEvent(this)
+        awsHelper!!.saveKeyAndCertificate(
+            Certificate.KEY_CLAIM,
+            Certificate.CERT_CLAIM,
+            "CA_ID",
+            "12345678"
+        )
+
+        awsHelper!!.connect("CA_ID", "12345678")
+    }
+
+    override fun onGetPermanentCertificate(certificateObject: CertificateObject?) {
+        TODO("Not yet implemented")
+    }
+
+    override fun onRegisterComplete(registerObject: RegisterObject?) {
+        TODO("Not yet implemented")
+    }
+
+    override fun onSetTextView(setTView: SetTView?) {
+        TODO("Not yet implemented")
+    }
+
+    override fun onStatusConnection(Showmsg: String?) {
+        Log.i("TESTTEST","Status :"+Showmsg)
     }
 }
