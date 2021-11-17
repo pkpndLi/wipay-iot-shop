@@ -28,7 +28,7 @@ import java.lang.Exception
 import java.lang.reflect.Method
 
 
-class MenuActivity : AppCompatActivity(), AWSIoTEvent {
+class MenuActivity : AppCompatActivity() {
     var MY_PERMISSIONS_STORAGE = arrayOf(
         "android.permission.READ_EXTERNAL_STORAGE",
         "android.permission.WRITE_EXTERNAL_STORAGE",
@@ -45,7 +45,7 @@ class MenuActivity : AppCompatActivity(), AWSIoTEvent {
 
         requestPermission()
 
-        awsconnect()
+
 
         val devID = Settings.Secure.getString(this.contentResolver, Settings.Secure.ANDROID_ID)
         Log.i("testtest", getSerialNumber().toString())
@@ -85,6 +85,8 @@ class MenuActivity : AppCompatActivity(), AWSIoTEvent {
         }
         listImg.setOnClickListener {
             startActivity(Intent(this,SettingActivity::class.java))
+            awsHelper!!.publish("test","test")
+
         }
 
 
@@ -133,41 +135,18 @@ class MenuActivity : AppCompatActivity(), AWSIoTEvent {
         return serialNumber
     }
 
-    fun awsconnect(){
+//    private fun requestPermission() {
+//        val checkCallPhonePermission = ContextCompat.checkSelfPermission(
+//            this,
+//            Manifest.permission.READ_PHONE_STATE
+//        )
+//        if (checkCallPhonePermission != PackageManager.PERMISSION_GRANTED) {
+//            ActivityCompat.requestPermissions(
+//                this, arrayOf("android.permission.READ_PHONE_STATE"), 1)
+//        } else {
+//        }
+//    }
 
-        val keyStorePath = filesDir.path
-        // init aws helper
-        awsHelper = AWSIoTHelper(
-            "a33gna0t4ob4fa-ats.iot.ap-southeast-1.amazonaws.com",
-            keyStorePath,
-            "keystore",
-            "POS_CS10"
-        )
 
-        awsHelper!!.setProvisioningEvent(this)
-        awsHelper!!.saveKeyAndCertificate(
-            Certificate.KEY_CLAIM,
-            Certificate.CERT_CLAIM,
-            "CA_ID",
-            "12345678"
-        )
 
-        awsHelper!!.connect("CA_ID", "12345678")
-    }
-
-    override fun onGetPermanentCertificate(certificateObject: CertificateObject?) {
-        TODO("Not yet implemented")
-    }
-
-    override fun onRegisterComplete(registerObject: RegisterObject?) {
-        TODO("Not yet implemented")
-    }
-
-    override fun onSetTextView(setTView: SetTView?) {
-        TODO("Not yet implemented")
-    }
-
-    override fun onStatusConnection(Showmsg: String?) {
-        Log.i("TESTTEST","Status :"+Showmsg)
-    }
 }

@@ -107,7 +107,9 @@ public class AWSIoTHelper implements AWSIotMqttClientStatusCallback , AWSIotMqtt
             case Connected:
                 Log.i(LOG_TAG, "connected");
                 if (event != null){
+//                    mqtt.subscribeToTopic("$aws/things/POS_config/shadow/name/POS_CS10_config/get/accepted",AWSIotMqttQos.QOS0,this);
                     event.onStatusConnection("connected");
+
                 }
                 break;
             case ConnectionLost:
@@ -163,7 +165,7 @@ public class AWSIoTHelper implements AWSIotMqttClientStatusCallback , AWSIotMqtt
         } else if (topic.equals(registerTopicRejected)) {
             Log.i(LOG_TAG,"register Rejected :"+dataRecv);
         }
-        else if(topic.equals("busvalidator/location")){
+        else if(topic.equals("#")){
             SetTView msg = gson.fromJson(dataRecv, SetTView.class);
             if (event != null){
                 event.onSetTextView(msg);
