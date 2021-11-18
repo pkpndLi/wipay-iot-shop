@@ -37,7 +37,6 @@ class MenuActivity : AppCompatActivity() {
     )
     val REQUEST_EXTERNAL_STORAGE = 1
 
-    private var awsHelper: AWSIoTHelper? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -85,7 +84,6 @@ class MenuActivity : AppCompatActivity() {
         }
         listImg.setOnClickListener {
             startActivity(Intent(this,SettingActivity::class.java))
-            awsHelper!!.publish("test","test")
 
         }
 

@@ -15,13 +15,25 @@ import com.example.wipay_iot_shop.helper.Certificate
 import com.example.wipay_iot_shop.helper.data.CertificateObject
 import com.example.wipay_iot_shop.helper.data.RegisterObject
 import com.example.wipay_iot_shop.helper.data.SetTView
+import com.google.gson.Gson
+import org.json.JSONObject
+import java.util.*
+import kotlin.collections.ArrayList
 
 class SettingActivity : AppCompatActivity(), AWSIoTEvent {
     private var awsHelper: AWSIoTHelper? = null
+    var a = ""
+    var gson = Gson()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_setting)
-
+        val keyStorePath = filesDir.path
+        awsHelper = AWSIoTHelper(
+            "a33gna0t4ob4fa-ats.iot.ap-southeast-1.amazonaws.com",
+            keyStorePath,
+            "keystore",
+            "test_shadow"
+        )
         awsconnect()
 
         val merchantList = findViewById<ListView>(R.id.merchantList)
@@ -47,6 +59,7 @@ class SettingActivity : AppCompatActivity(), AWSIoTEvent {
                     startActivity(Intent(this,ConfigActivity::class.java))
                 }
                 1->{
+                    Log.i("testtest","aws test = "+a)
 //                    $aws/things/POS_config/shadow/name/POS_CS10_config/get/accepted
 
 //                    mqtt!!.publishString("","\$aws/things/POS_config/shadow/name/POS_CS10_config/get",AWSIotMqttQos.QOS0)
@@ -61,14 +74,8 @@ class SettingActivity : AppCompatActivity(), AWSIoTEvent {
 
     fun awsconnect(){
 
-        val keyStorePath = filesDir.path
+
         // init aws helper
-        awsHelper = AWSIoTHelper(
-            "a33gna0t4ob4fa-ats.iot.ap-southeast-1.amazonaws.com",
-            keyStorePath,
-            "keystore",
-            "POS_CS10_config"
-        )
 
         awsHelper!!.setProvisioningEvent(this)
         awsHelper!!.saveKeyAndCertificate(
@@ -92,15 +99,30 @@ class SettingActivity : AppCompatActivity(), AWSIoTEvent {
 
     }
 
-    override fun onSetTextView(setTView: SetTView?) {
+    override fun onSetTextView(set: SetTView?) {
+        val msg: String? = gson.toJson(set!!.state.toString())
+        Log.i("aaaaaaaa",""+msg)
+        a = set!!.state.toString()
 
-        Log.i("TESTTEST",setTView.toString())
     }
 
     override fun onStatusConnection(Showmsg: String?) {
         Log.i("TESTTEST","Status :"+Showmsg)
         if(Showmsg == "connected"){
             awsHelper!!.subscribe("test")
+            awsHelper!!.subscribe("\$aws/things/POS_config/shadow/name/POS_CS10_config/get/accepted")
         }
     }
+}
+public data class Data {
+    val TEST: TestData
+}
+
+data class TestData {
+    val data: Person
+}
+
+data class Person {
+    val name: String
+    val phone: String
 }
