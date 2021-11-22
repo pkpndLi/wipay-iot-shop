@@ -4,37 +4,27 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import android.view.View
 import android.widget.ListView
-import com.amazonaws.mobileconnectors.iot.AWSIotMqttManager
-import com.amazonaws.mobileconnectors.iot.AWSIotMqttNewMessageCallback
-import com.amazonaws.mobileconnectors.iot.AWSIotMqttQos
+import com.amazonaws.auth.policy.Policy.fromJson
 import com.example.wipay_iot_shop.helper.AWSIoTEvent
 import com.example.wipay_iot_shop.helper.AWSIoTHelper
 import com.example.wipay_iot_shop.helper.Certificate
 import com.example.wipay_iot_shop.helper.data.CertificateObject
 import com.example.wipay_iot_shop.helper.data.RegisterObject
-import com.example.wipay_iot_shop.helper.data.SetTView
 import com.google.gson.Gson
-import org.json.JSONObject
 import java.util.*
 import kotlin.collections.ArrayList
 
-class SettingActivity : AppCompatActivity(), AWSIoTEvent {
-    private var awsHelper: AWSIoTHelper? = null
+class SettingActivity : AppCompatActivity() {
+
+
     var a = ""
-    var gson = Gson()
+    var AID = ""
+    var TERM = ""
+    var CAPK = ""
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_setting)
-        val keyStorePath = filesDir.path
-        awsHelper = AWSIoTHelper(
-            "a33gna0t4ob4fa-ats.iot.ap-southeast-1.amazonaws.com",
-            keyStorePath,
-            "keystore",
-            "test_shadow"
-        )
-        awsconnect()
 
         val merchantList = findViewById<ListView>(R.id.merchantList)
 
@@ -42,87 +32,37 @@ class SettingActivity : AppCompatActivity(), AWSIoTEvent {
 //        Items.add(Model("Merchant Location","-",R.drawable.location64))
 //        Items.add(Model("Merchant ID","222222222222222",R.drawable.shop64))
 //        Items.add(Model("Terminal ID","22222222",R.drawable.terminal64))
-        Items.add(Model("manual config","",R.drawable.config))
-        Items.add(Model("Load config ","",R.drawable.loadconfig))
-        Items.add(Model("Report sale","",R.drawable.summary))
+        Items.add(Model("manual config", "", R.drawable.config))
+        Items.add(Model("Load config ", "", R.drawable.loadconfig))
+        Items.add(Model("Report sale", "", R.drawable.summary))
 
 
-
-
-
-        val adapter = SettingAdapter(this,R.layout.merchantlist,Items)
+        val adapter = SettingAdapter(this, R.layout.merchantlist, Items)
         merchantList.adapter = adapter
 
-        merchantList.setOnItemClickListener { adapter, View, i, l->
-            when(i){
-                0->{
-                    startActivity(Intent(this,ConfigActivity::class.java))
+        merchantList.setOnItemClickListener { adapter, View, i, l ->
+            when (i) {
+                0 -> {
+                    startActivity(Intent(this, ConfigActivity::class.java))
                 }
-                1->{
-                    Log.i("testtest","aws test = "+a)
-//                    $aws/things/POS_config/shadow/name/POS_CS10_config/get/accepted
-
-//                    mqtt!!.publishString("","\$aws/things/POS_config/shadow/name/POS_CS10_config/get",AWSIotMqttQos.QOS0)
+                1 -> {
+                    val itn =Intent(this,LoadConfigActivity::class.java).apply{
+                        putExtra("AID",AID)
+                        putExtra("TERM",TERM)
+                        putExtra("CAPK",CAPK)
+                    }
+                    startActivity(itn)
                 }
-                2->{
-                    startActivity(Intent(this,SettlementActivity::class.java))
+                2 -> {
+                    startActivity(Intent(this, SettlementActivity::class.java))
                 }
 
             }
         }
     }
 
-    fun awsconnect(){
 
 
-        // init aws helper
-
-        awsHelper!!.setProvisioningEvent(this)
-        awsHelper!!.saveKeyAndCertificate(
-            Certificate.KEY_CLAIM,
-            Certificate.CERT_CLAIM,
-            "CA_ID",
-            "12345678"
-        )
-
-        awsHelper!!.connect("CA_ID", "12345678")
 
 
-    }
-
-
-    override fun onGetPermanentCertificate(certificateObject: CertificateObject?) {
-
-    }
-
-    override fun onRegisterComplete(registerObject: RegisterObject?) {
-
-    }
-
-    override fun onSetTextView(set: SetTView?) {
-        val msg: String? = gson.toJson(set!!.state.toString())
-        Log.i("aaaaaaaa",""+msg)
-        a = set!!.state.toString()
-
-    }
-
-    override fun onStatusConnection(Showmsg: String?) {
-        Log.i("TESTTEST","Status :"+Showmsg)
-        if(Showmsg == "connected"){
-            awsHelper!!.subscribe("test")
-            awsHelper!!.subscribe("\$aws/things/POS_config/shadow/name/POS_CS10_config/get/accepted")
-        }
-    }
-}
-public data class Data {
-    val TEST: TestData
-}
-
-data class TestData {
-    val data: Person
-}
-
-data class Person {
-    val name: String
-    val phone: String
 }

@@ -7,13 +7,9 @@ import com.amazonaws.mobileconnectors.iot.AWSIotMqttClientStatusCallback;
 import com.amazonaws.mobileconnectors.iot.AWSIotMqttManager;
 import com.amazonaws.mobileconnectors.iot.AWSIotMqttNewMessageCallback;
 import com.amazonaws.mobileconnectors.iot.AWSIotMqttQos;
-import com.example.wipay_iot_shop.MenuActivity;
 import com.example.wipay_iot_shop.helper.data.CertificateObject;
 import com.example.wipay_iot_shop.helper.data.RegisterObject;
-import com.example.wipay_iot_shop.helper.data.SetTView;
 import com.google.gson.Gson;
-
-import org.jetbrains.annotations.NotNull;
 
 import java.security.KeyStore;
 import java.util.UUID;
@@ -165,16 +161,16 @@ public class AWSIoTHelper implements AWSIotMqttClientStatusCallback , AWSIotMqtt
         } else if (topic.equals(registerTopicRejected)) {
             Log.i(LOG_TAG,"register Rejected :"+dataRecv);
         }
-        else if(topic.equals("#")){
-            SetTView msg = gson.fromJson(dataRecv, SetTView.class);
+        else if(topic.equals("$aws/things/POS_config/shadow/name/POS_CS10_config/get/accepted")){
+//            SetTView msg = gson.fromJson(dataRecv, SetTView.class);
             if (event != null){
-                event.onSetTextView(msg);
+                event.onSetConfig(dataRecv);
             }
         }
         else{
-            SetTView msg = gson.fromJson(dataRecv, SetTView.class);
+//            SetTView msg = gson.fromJson(dataRecv, SetTView.class);
             if (event != null){
-                event.onSetTextView(msg);
+//                event.onSetTextView(msg);
             }
             Log.i(LOG_TAG,"msg : "+dataRecv);
         }

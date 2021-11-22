@@ -1,29 +1,18 @@
 package com.example.wipay_iot_shop
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.ColorSpace.connect
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.view.View
 import android.widget.ImageView
 import android.graphics.drawable.Drawable
 import android.provider.Settings
 import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.annotation.RequiresApi
 import android.os.Build
-import android.system.Os.connect
-import com.example.wipay_iot_shop.helper.AWSIoTEvent
-import com.example.wipay_iot_shop.helper.AWSIoTHelper
-import com.example.wipay_iot_shop.helper.Certificate
-import com.example.wipay_iot_shop.helper.data.CertificateObject
-import com.example.wipay_iot_shop.helper.data.RegisterObject
-import com.example.wipay_iot_shop.helper.data.SetTView
 import java.lang.Exception
 import java.lang.reflect.Method
 
@@ -86,8 +75,6 @@ class MenuActivity : AppCompatActivity() {
             startActivity(Intent(this,SettingActivity::class.java))
 
         }
-
-
     }
 
     fun getImage(context: Context, name: String?): Drawable? {
