@@ -144,7 +144,7 @@ class SaleTLEActivity : AppCompatActivity() {
 //    var PORT = 7500
 
     //Tle host
-    private val HOST = "223.27.234.243"
+    private val HOST = "192.168.1.184"
     var PORT = 5000
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -164,7 +164,7 @@ class SaleTLEActivity : AppCompatActivity() {
         ltwkId = sp.getString("LTWK_ID",null).toString()
 
         intent.apply {
-//          processing = getBooleanExtra("processing",false)
+          processing = getBooleanExtra("processing",false)
             totalAmount = getIntExtra("totalAmount",145)
             cardNO = getStringExtra("cardNO").toString()
             cardEXD = getStringExtra("cardEXD").toString()
@@ -173,6 +173,8 @@ class SaleTLEActivity : AppCompatActivity() {
         }
 
          LTID = serialNumber()
+
+//
 //         cardNO = "4162026250958064"
 //         cardEXD = "2512"
 //         totalAmount = 200

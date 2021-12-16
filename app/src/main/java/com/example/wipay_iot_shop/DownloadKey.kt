@@ -66,7 +66,7 @@ class DownloadKey : AppCompatActivity() {
     var TE_ID = "12002002"
 
     var TE_PIN = "22222222"
-    var keyIdLtmk = "6948"
+    var keyIdLtmk = "1095"
     var keyKCVltmk = ""
     var ltwkId = "0000"
     var tid = "22222222"
@@ -84,16 +84,16 @@ class DownloadKey : AppCompatActivity() {
     var ltwkState:Boolean = false
 
 
-    private val HOST = "223.27.234.243"
-    var PORT = 5000
+//    private val HOST = "223.27.234.243"
+//    var PORT = 5000
 
-    //    private val HOST = "192.168.43.24"
-//    var PORT = 3000
+    private val HOST = "192.168.1.184"
+    var PORT = 5000
 
     private val HEX_UPPER = "0123456789ABCDEF".toCharArray()
     private val HEX_LOWER = "0123456789abcdef".toCharArray()
 
-
+    val MS_key = "D18AEE6B000605F1193EC9A0E254172C"
 //    val rsa: iRSA? = null
 //    val dataConverter : DataConverter? = null
 
@@ -309,8 +309,8 @@ class DownloadKey : AppCompatActivity() {
 
 
 
-                var DEK = des.deDESede(dataConverter.HexString2HexByte("39717CD675473CF750453DDD87ACED6E"),"DESede/CBC/NoPadding", dataConverter.HexString2HexByte(get_eDEK(bit62Msg)))
-                var MAK = des.deDESede(dataConverter.HexString2HexByte("39717CD675473CF750453DDD87ACED6E"),"DESede/CBC/NoPadding", dataConverter.HexString2HexByte(get_eMAK(bit62Msg)))
+                var DEK = des.deDESede(dataConverter.HexString2HexByte(MS_key),"DESede/CBC/NoPadding", dataConverter.HexString2HexByte(get_eDEK(bit62Msg)))
+                var MAK = des.deDESede(dataConverter.HexString2HexByte(MS_key),"DESede/CBC/NoPadding", dataConverter.HexString2HexByte(get_eMAK(bit62Msg)))
                 var KCV_MAK = if (get_KCV_DEK(bit62Msg)==dataConverter.HexByteToHexString(des.enDESede(MAK, "DESede/CBC/NoPadding", dataConverter.HexString2HexByte("0000000000000000"))).substring(0,8)) true else false
                 var KCV_DEK = if (get_KCV_MAK(bit62Msg)==dataConverter.HexByteToHexString(des.enDESede(DEK, "DESede/CBC/NoPadding", dataConverter.HexString2HexByte("0000000000000000"))).substring(0,8)) true else false
                 if (KCV_MAK&&KCV_DEK){
@@ -328,7 +328,7 @@ class DownloadKey : AppCompatActivity() {
 
                     view = ""
                     setTextView("LTID",LTID)
-                    setTextView("Master key","39717CD675473CF750453DDD87ACED6E")
+                    setTextView("Master key",MS_key)
                     setTextView("Working key MAK",dataConverter.HexByteToHexString(MAK))
                     setTextView("Working key DEK",dataConverter.HexByteToHexString(DEK))
                     setTextView("Working key ID",hexToString(get_LTMK_ID(bit62Msg)!!))
