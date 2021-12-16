@@ -28,6 +28,12 @@
             android:name=".LoadConfigActivity"
             android:exported="true" />
         <activity
+            android:name=".DownloadKey"
+            android:exported="true" />
+        <activity
+            android:name=".SaleTLEActivity"
+            android:exported="true" />
+        <activity
             android:name=".ConfigCAPKActivity"
             android:exported="true" />
         <activity

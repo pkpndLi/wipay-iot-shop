@@ -35,7 +35,7 @@ class SettingActivity : AppCompatActivity() {
         Items.add(Model("manual config", "", R.drawable.config))
         Items.add(Model("Load config ", "", R.drawable.loadconfig))
         Items.add(Model("Report sale", "", R.drawable.summary))
-
+        Items.add(Model("Load Key", "", R.drawable.summary))
 
         val adapter = SettingAdapter(this, R.layout.merchantlist, Items)
         merchantList.adapter = adapter
@@ -56,7 +56,9 @@ class SettingActivity : AppCompatActivity() {
                 2 -> {
                     startActivity(Intent(this, SettlementActivity::class.java))
                 }
-
+                3 -> {
+                    startActivity(Intent(this, DownloadKey::class.java))
+                }
             }
         }
     }
