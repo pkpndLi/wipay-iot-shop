@@ -7,9 +7,10 @@
     tools:context=".LoadConfigActivity">
 
     <LinearLayout
-        android:layout_width="409dp"
-        android:layout_height="601dp"
+        android:layout_width="357dp"
+        android:layout_height="512dp"
         android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
@@ -42,5 +43,29 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="clear all capk" />
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="214dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tv_loadconfig"
+                    android:layout_width="match_parent"
+                    android:layout_height="669dp"
+                    android:text="TextView" />
+            </LinearLayout>
+        </ScrollView>
+
+        <Button
+            android:id="@+id/btn_loadconfig"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="load config" />
+
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
