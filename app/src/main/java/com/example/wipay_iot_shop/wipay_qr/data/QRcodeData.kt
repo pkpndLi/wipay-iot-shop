@@ -6,3 +6,6 @@ data class QRcodeData(
 data class data(
     val generateShopQrCode : generateShopQrCode
 )
+data class generateShopQrCode(
+    val qrCode:String
+)

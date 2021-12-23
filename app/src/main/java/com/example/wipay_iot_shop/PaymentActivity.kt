@@ -132,11 +132,11 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener,EmvEvent,McrEv
                             testEmv()
                         }
                         2 -> {
-                            startActivity(Intent(this,QRpaymentActivity::class.java))
-//                            val itn =Intent(this,QRpaymentActivity::class.java).apply{
-//                                putExtra("processing",true)
-//                            }
-//                            startActivity(itn)
+                            val itn =Intent(this,QRpaymentActivity::class.java).apply{
+                                putExtra("totalAmount",totalAmount)
+                                putExtra("menuName",menuName)
+                            }
+                            startActivity(itn)
                         }
                         3->{
                             try {

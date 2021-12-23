@@ -21,6 +21,6 @@ interface Service {
     @Headers ("Content-Type:application/json")
     fun genQR(
         @Header ("Authorization") Authorization:String,
-        @Body query:String
+        @Body query:GenQRcode
     ): Call<QRcodeData>
 }
