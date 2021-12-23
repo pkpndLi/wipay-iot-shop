@@ -48,13 +48,13 @@
             android:name=".ConfigActivity"
             android:exported="true" />
         <activity
-            android:name=".QRpaymentActivity"
+            android:name=".MenuActivity"
             android:exported="true" />
         <activity
             android:name=".BatchUploadActivity"
             android:exported="true" />
         <activity
-            android:name=".MenuActivity"
+            android:name=".QRpaymentActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
