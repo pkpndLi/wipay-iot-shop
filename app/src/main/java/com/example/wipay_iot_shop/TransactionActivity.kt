@@ -1,19 +1,27 @@
 package com.example.wipay_iot_shop
 
+import android.Manifest
+import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
+import android.graphics.Bitmap
+import android.graphics.drawable.Drawable
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.os.StrictMode
+import android.os.StrictMode.ThreadPolicy
 import android.util.Log
+import android.view.View
+import android.widget.Button
+import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import com.example.testpos.database.transaction.*
 import com.example.testpos.evenbus.data.MessageEvent
-import com.example.wipay_iot_shop.printer.Printer
 import com.example.wipay_iot_shop.transaction.*
 import com.imohsenb.ISO8583.builders.ISOClientBuilder
 import com.imohsenb.ISO8583.builders.ISOMessageBuilder
@@ -27,7 +35,11 @@ import com.imohsenb.ISO8583.exceptions.ISOException
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
+import java.io.File
 import java.io.IOException
+import java.lang.Exception
+import java.lang.RuntimeException
+import java.util.*
 import kotlin.experimental.and
 
 class TransactionActivity : AppCompatActivity() {
@@ -36,6 +48,7 @@ class TransactionActivity : AppCompatActivity() {
     var saleDAO : SaleDao? = null
     var flagReverseDAO : FlagReverseDao? = null
     var stuckReverseDAO : StuckReverseDao? = null
+    var responseDAO : ResponseDao? = null
 
     private val MY_PREFS = "my_prefs"
     private lateinit var sp: SharedPreferences
@@ -45,13 +58,11 @@ class TransactionActivity : AppCompatActivity() {
     var cardNO:String = ""
     var cardEXD:String = ""
     var menuName:String = ""
-    var DE55:String = ""
-
-    var initialStan: Int? = 0
 
     var output1: TextView? = null
     var output2: TextView? = null
     var stan: Int? = null
+    var initialStan: Int? = 1244
     var reverseFlag :Boolean? = null
     var reversal: String? = null
     var responseCode: String? = null
@@ -61,49 +72,69 @@ class TransactionActivity : AppCompatActivity() {
     var readSale: String? = null
     var readStan: Int? = null
     var stuckReverse :Boolean? = null
-    var readFlagReverse :Boolean? = null
-    var readStuckReverse :Boolean? = null
-    var responseDAO : ResponseDao? = null
+    var readFlagReverse :Boolean? = false
+    var readStuckReverse :Boolean? = false
     var readResponseMsg:String? = null
-    var printer :Printer?=null
 
+    //get initial value from MenuActivity
     var settlementFlag:Boolean? = null
     var firstTransactionFlag:Boolean? = null
     var startId:Int = 0
 
+//    val username = "phanida601@gmail.com"
+//    val password = "1469900351198"
+
+    private var main: View? = null
+    private var bitmap: Bitmap? = null
+    private val RC_WRITE_EXTERNAL_STORAGE = 123
+
+    var TID: String = "3535353535353535"
+    var MID: String = "353535353535353535353535353535"
+
+
+    //    private val HOST = "192.168.43.195"
+//    var PORT = 5000
+//    private val HOST = "192.168.68.195"
 //    private val HOST = "192.168.68.225"
+//      private val HOST = "192.168.178.187"
 //    var PORT = 5000
-private val HOST = "192.168.1.184"
-    var PORT = 5000
+//    private val HOST = "192.168.43.24"
+    //      private val HOST = "192.168.68.107"
+//    var PORT = 3000
 //    private val HOST = "192.168.68.119"
-//    var PORT = 5000
+//    var PORT = 5001
+
+//    private val HOST = "203.148.160.47"
+//    var PORT = 7500
+
+    private val HOST = "223.27.234.243"
+    var PORT = 5000
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_transaction)
 
         sp = getSharedPreferences(MY_PREFS, MODE_PRIVATE)
+
+        main = findViewById(R.id.mainActivity)
         val setOrder = findViewById<TextView>(R.id.order)
         val setAmount = findViewById<TextView>(R.id.amount)
+
         settlementFlag =  sp.getBoolean("settlementFlag",false)
         firstTransactionFlag = sp.getBoolean("firstTransactionFlag",true)
 
-
-            intent.apply {
+        intent.apply {
 //          processing = getBooleanExtra("processing",false)
             totalAmount = getIntExtra("totalAmount",145)
             cardNO = getStringExtra("cardNO").toString()
             cardEXD = getStringExtra("cardEXD").toString()
             menuName = getStringExtra("menuName").toString()
-                DE55 = getStringExtra("DE55").toString()
-                Log.i("log_tag",DE55)
 
         }
 
         setOrder.setText(menuName)
         setAmount.setText(totalAmount.toString())
 
-        Log.i("log_tag","onCreate!!!")
         Log.d("log_tag","on transactionActivity.")
         Log.w("log_tag","settlementFlag: " + settlementFlag)
         Log.w("log_tag","firstTransactionFlag: " + firstTransactionFlag)
@@ -118,6 +149,7 @@ private val HOST = "192.168.1.184"
 //            "runDBthread",
 //            ""
 //        ))
+
 //      Check settlementFlag
         if(settlementFlag == true){
 
@@ -128,6 +160,7 @@ private val HOST = "192.168.1.184"
             setDialogS("","Comfirm your order.")
             processing = true
         }
+
 
         val handler = Handler(Looper.getMainLooper())
         handler.postDelayed({
@@ -154,16 +187,16 @@ private val HOST = "192.168.1.184"
     }
 
     fun accessDatabase(){
-
         appDatabase = AppDatabase.getAppDatabase(this)
         reversalDAO = appDatabase?.reversalDao()
         saleDAO = appDatabase?.saleDao()
         flagReverseDAO = appDatabase?.flagReverseDao()
         stuckReverseDAO = appDatabase?.stuckReverseDao()
         responseDAO = appDatabase?.responseDao()
+
     }
 
-        @Subscribe(threadMode = ThreadMode.MAIN)
+    @Subscribe(threadMode = ThreadMode.MAIN)
     public fun onMessageEvent(event: MessageEvent){
 
 //        if(event.type == "runDBthread"){
@@ -184,7 +217,11 @@ private val HOST = "192.168.1.184"
 //
 //        }
 
-            manageResponse(event)
+//            if(event.type == "afterApprove"){
+//                sendEmailProcess()
+//            }
+
+        manageResponse(event)
     }
 
     fun manageProcessing(){
@@ -287,12 +324,11 @@ private val HOST = "192.168.1.184"
             }else{      //manage transactionApprove
 
 
-
+                Log.i("log_tag", "Transaction Approve.")
 //                transactionApprove()
                 setDialogApprove(null,"Transaction complete.")
                 var saleApprove = SaleEntity(null,saleMsg.toString(),stan)
                 var responseSaleApprove = ResponseEntity(null,responseMsg)
-                Log.i("log_tag", "Transaction Approve." + responseSaleApprove)
 
 
                 Thread{
@@ -323,6 +359,7 @@ private val HOST = "192.168.1.184"
                     Log.w("log_tag","saveResponse : " + readResponseMsg)
 
                 }.start()
+
             }
 
         }else{
@@ -381,6 +418,46 @@ private val HOST = "192.168.1.184"
 
     }
 
+//    fun sendEmailProcess(){
+//
+//        Log.i("log_tag","send email.")
+//        //Send Email Slip
+//        val _txtEmail = "phanida.lip@gmail.com"
+//        val username = "phanida601@gmail.com"
+//        val password = "1469900351198"
+//        val messageToSend = "test send eamil wipay shop."
+//        val props = Properties()
+//        props["mail.smtp.auth"] = "true"
+//        props["mail.smtp.starttls.enable"] = "true"
+//        props["mail.smtp.host"] = "smtp.gmail.com"
+//        props["mail.smtp.port"] = "587"
+//
+//        val session = Session.getInstance(props,
+//            object : Authenticator() {
+//                override fun getPasswordAuthentication(): PasswordAuthentication {
+//                    return PasswordAuthentication(username, password)
+//                }
+//            })
+//        try {
+//            val message: Message = MimeMessage(session)
+//            message.setFrom(InternetAddress(username))
+//            message.setRecipients(
+//                Message.RecipientType.TO,InternetAddress.parse(_txtEmail)
+//            )
+//            message.subject = "Sending email without opening gmail apps"
+//            message.setText(messageToSend)
+//            Transport.send(message)
+//            Toast.makeText(
+//                applicationContext,
+//                "email send successfully.",
+//                Toast.LENGTH_LONG
+//            ).show()
+//        } catch (e: MessagingException) {
+//            throw RuntimeException(e)
+//        }
+//
+//
+//    }
 
     fun sendTransactionProcess(){
 
@@ -427,7 +504,7 @@ private val HOST = "192.168.1.184"
 
             } catch (err: ISOClientException) {
                 Log.e("log_tag", "error1 is ${err.message}")
-                if (err.message!!.equals("Read Timeout")) {
+                if (err.message.equals("Read Timeout")) {
 
                     runOnUiThread {
 //
@@ -486,18 +563,18 @@ private val HOST = "192.168.1.184"
             .mti(MESSAGE_FUNCTION.Request, MESSAGE_ORIGIN.Acquirer)
             .processCode("000000")
             .setField(FIELDS.F2_PAN, cardNO)
-            .setField(FIELDS.F4_AmountTransaction, totalamount(totalAmount!!.toDouble() ))
+            .setField(FIELDS.F4_AmountTransaction, convertToFloat(totalAmount!!.toDouble()))
             .setField(FIELDS.F11_STAN, STAN)
             .setField(FIELDS.F14_ExpirationDate, cardEXD)
             .setField(FIELDS.F22_EntryMode, "0010")
             .setField(FIELDS.F24_NII_FunctionCode, "120")
             .setField(FIELDS.F25_POS_ConditionCode, "00")
-            .setField(FIELDS.F41_CA_TerminalID,hexStringToByteArray("3535353535353535"))
-            .setField(FIELDS.F42_CA_ID,hexStringToByteArray("353535353535353535353535353535"))
-//            .setField(FIELDS.F55_ICC,DE55)
+            .setField(FIELDS.F41_CA_TerminalID,hexStringToByteArray("3232323232323232"))
+            .setField(FIELDS.F42_CA_ID,hexStringToByteArray("323232323232323232323232323232"))
             .setField(FIELDS.F62_Reserved_Private,hexStringToByteArray("303030343841"))
             .setHeader("6001208000")
             .build()
+
     }
 
     fun reversalPacket(STAN: String): ISOMessage? {
@@ -507,15 +584,14 @@ private val HOST = "192.168.1.184"
             .mti(MESSAGE_FUNCTION.Request, MESSAGE_ORIGIN.Acquirer)
             .processCode("000000")
             .setField(FIELDS.F2_PAN, cardNO)
-            .setField(FIELDS.F4_AmountTransaction, totalamount(totalAmount!!.toDouble()))
+            .setField(FIELDS.F4_AmountTransaction,convertToFloat(totalAmount!!.toDouble()))
             .setField(FIELDS.F11_STAN, STAN)
             .setField(FIELDS.F14_ExpirationDate, cardEXD)
             .setField(FIELDS.F22_EntryMode, "0010")
             .setField(FIELDS.F24_NII_FunctionCode, "120")
             .setField(FIELDS.F25_POS_ConditionCode, "00")
-            .setField(FIELDS.F41_CA_TerminalID,hexStringToByteArray("3535353535353535"))
-            .setField(FIELDS.F42_CA_ID,hexStringToByteArray("353535353535353535353535353535"))
-//            .setField(FIELDS.F55_ICC,DE55)
+            .setField(FIELDS.F41_CA_TerminalID,hexStringToByteArray(TID))
+            .setField(FIELDS.F42_CA_ID,hexStringToByteArray(MID))
             .setField(FIELDS.F62_Reserved_Private,hexStringToByteArray("303030343841"))
             .setHeader("6001208000")
             .build()
@@ -528,8 +604,8 @@ private val HOST = "192.168.1.184"
             .mti(MESSAGE_FUNCTION.Request, MESSAGE_ORIGIN.Acquirer)
             .processCode("990000")
             .setField(FIELDS.F24_NII_FunctionCode,"120")
-            .setField(FIELDS.F41_CA_TerminalID,hexStringToByteArray("3535353535353535"))
-            .setField(FIELDS.F42_CA_ID,hexStringToByteArray("353535353535353535353535353535"))
+            .setField(FIELDS.F41_CA_TerminalID,hexStringToByteArray("3232323232323232"))
+            .setField(FIELDS.F42_CA_ID,hexStringToByteArray("323232323232323232323232323232"))
             .setField(FIELDS.F62_Reserved_Private,hexStringToByteArray("303030343841"))
             .setHeader("6001208000")
             .build()
@@ -551,14 +627,27 @@ private val HOST = "192.168.1.184"
         return responseCode
     }
 
-    fun mtiUnpack(response: String): String? {
+    fun mtiUnpack(isoMsg: String): String? {
         val isoMessageUnpacket: ISOMessage = ISOMessageBuilder.Unpacker()
-            .setMessage(response)
+            .setMessage(isoMsg)
             .build()
         val mti: String? = isoMessageUnpacket.getMti()
         return mti
     }
 
+
+    fun setDialogNormal(title: String?,msg: String?) {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle(title)
+        builder.setMessage(msg)
+        //builder.setPositiveButton("OK", DialogInterface.OnClickListener(function = x))
+        builder.setPositiveButton(getString(R.string.ok),
+            DialogInterface.OnClickListener{ dialog, which ->
+                Toast.makeText(applicationContext,android.R.string.ok, Toast.LENGTH_LONG).show()
+            })
+        val dialog = builder.create()
+        dialog.show()
+    }
 
     fun setDialog(title: String?,msg: String?) {
         val builder = AlertDialog.Builder(this)
@@ -567,61 +656,13 @@ private val HOST = "192.168.1.184"
         //builder.setPositiveButton("OK", DialogInterface.OnClickListener(function = x))
         builder.setPositiveButton(getString(R.string.ok),
             DialogInterface.OnClickListener{ dialog, which ->
-            Toast.makeText(applicationContext,android.R.string.ok, Toast.LENGTH_LONG).show()
-            startActivity(Intent(this,MenuActivity::class.java))
-        })
-        val dialog = builder.create()
-        dialog.show()
-    }
-
-    fun setDialogS(title: String?,msg: String?) {
-        val builder = AlertDialog.Builder(this)
-        builder.setTitle(title)
-        builder.setMessage(msg)
-        //builder.setPositiveButton("OK", DialogInterface.OnClickListener(function = x))
-        builder.setPositiveButton(getString(R.string.ok),
-            DialogInterface.OnClickListener{ dialog, which ->
-            Toast.makeText(applicationContext,android.R.string.ok, Toast.LENGTH_LONG).show()
-
-                Thread{
-                    accessDatabase()
-                    readStan = saleDAO?.getSale()?.STAN
-                    readFlagReverse = flagReverseDAO?.getFlagReverse()?.flagReverse
-                    readStuckReverse = stuckReverseDAO?.getStuckReverse()?.stuckReverse
-                    reReversal = reversalDAO?.getReversal()?.isoMsg
-                    Log.i("log_tag","readSTAN : " + readStan)
-                    Log.i("log_tag","readFlagReverse : " + readFlagReverse)
-                    Log.i("log_tag","readStuckReverse : " + readStuckReverse)
-//                    Log.i("log_tag","reReversal : $reReversal ")
-                }.start()
-            })
-        
-            DialogInterface.OnClickListener{ dialog, which ->
-                Toast.makeText(applicationContext,android.R.string.cancel, Toast.LENGTH_LONG).show()
+                Toast.makeText(applicationContext,android.R.string.ok, Toast.LENGTH_LONG).show()
                 startActivity(Intent(this,MenuActivity::class.java))
-            }
-
+            })
         val dialog = builder.create()
         dialog.show()
     }
 
-    private fun hexStringToByteArray(s: String): ByteArray? {
-        val b = ByteArray(s.length / 2)
-        for (i in b.indices) {
-            val index = i * 2
-            val v = s.substring(index, index + 2).toInt(16)
-            b[i] = v.toByte()
-        }
-        return b
-    }
-
-    private fun bytesArrayToHexString(b1: ByteArray): String? {
-        val strBuilder = StringBuilder()
-        for (`val` in b1) {
-            strBuilder.append(String.format("%02x", `val` and 0xff.toByte()))
-        }
-        return strBuilder.toString()
-    }
     fun setDialogApprove(title: String?,msg: String?) {
         val builder = AlertDialog.Builder(this)
         builder.setTitle(title)
@@ -642,11 +683,79 @@ private val HOST = "192.168.1.184"
         dialog.show()
     }
 
-    fun totalamount(Totalamount : Double ):String{
+    fun setDialogS(title: String?,msg: String?) {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle(title)
+        builder.setMessage(msg)
+        //builder.setPositiveButton("OK", DialogInterface.OnClickListener(function = x))
+        builder.setPositiveButton(getString(R.string.ok),
+            DialogInterface.OnClickListener{ dialog, which ->
+                Toast.makeText(applicationContext,android.R.string.ok, Toast.LENGTH_LONG).show()
+
+                Thread{
+                    accessDatabase()
+                    readStan = saleDAO?.getSale()?.STAN
+                    readFlagReverse = flagReverseDAO?.getFlagReverse()?.flagReverse
+                    readStuckReverse = stuckReverseDAO?.getStuckReverse()?.stuckReverse
+                    reReversal = reversalDAO?.getReversal()?.isoMsg
+                    Log.i("log_tag","readSTAN : " + readStan)
+                    Log.i("log_tag","readFlagReverse : " + readFlagReverse)
+                    Log.i("log_tag","readStuckReverse : " + readStuckReverse)
+//                    Log.i("log_tag","reReversal : $reReversal ")
+                }.start()
+            })
+
+        DialogInterface.OnClickListener{ dialog, which ->
+            Toast.makeText(applicationContext,android.R.string.cancel, Toast.LENGTH_LONG).show()
+            startActivity(Intent(this,MenuActivity::class.java))
+        }
+
+        val dialog = builder.create()
+        dialog.show()
+    }
+
+    //receipt
+//    @AfterPermissionGranted(RC_WRITE_EXTERNAL_STORAGE)
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String?>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+        // Forward results to EasyPermissions
+        Log.w("log", "requestCode: $requestCode")
+        Log.w("log", "permissions: $permissions")
+        Log.w("log", "grantResults: $grantResults")
+    }
+
+
+
+    private fun hexStringToByteArray(s: String): ByteArray? {
+        val b = ByteArray(s.length / 2)
+        for (i in b.indices) {
+            val index = i * 2
+            val v = s.substring(index, index + 2).toInt(16)
+            b[i] = v.toByte()
+        }
+        return b
+    }
+
+    private fun bytesArrayToHexString(b1: ByteArray): String? {
+        val strBuilder = StringBuilder()
+        for (`val` in b1) {
+            strBuilder.append(String.format("%02x", `val` and 0xff.toByte()))
+        }
+        return strBuilder.toString()
+    }
+
+    fun convertToFloat(Totalamount : Double ):String{
 
         var amount : List<String> = String.format("%.2f",Totalamount).split(".")
         var Amount = amount[0]+amount[1]
 
         return Amount
     }
+
 }

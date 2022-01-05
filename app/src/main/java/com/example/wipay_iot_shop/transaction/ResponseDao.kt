@@ -1,4 +1,4 @@
-package com.example.testpos.database.transaction
+package com.example.wipay_iot_shop.transaction
 
 import android.database.Cursor
 import androidx.room.*

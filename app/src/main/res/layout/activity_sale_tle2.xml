@@ -4,9 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:id="@+id/mainActivity"
+    android:id="@+id/SaleTLEActivity2"
     android:background="#fff"
-    tools:context=".TransactionActivity">
+    tools:context=".SaleTLEActivity2">
 
     <TextView
         android:id="@+id/amount"
@@ -82,4 +82,5 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.235" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

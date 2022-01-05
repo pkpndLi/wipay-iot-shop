@@ -2,11 +2,11 @@ package com.example.wipay_iot_shop.printer
 
 import vpos.apipackage.PosApiHelper
 
-class Printer(menuName:String, totalAmount: Int?){
+class Printer(){
     var posApiHelper = PosApiHelper.getInstance()
-    val menuName = menuName
-    val totalAmount = totalAmount
-    fun printSlip(){
+    fun printSlip(menuName:String, totalAmount: Int?){
+        val menuName = menuName
+        val totalAmount = totalAmount
         var ret = posApiHelper!!.PrintInit()
         posApiHelper!!.PrintSetGray(ret)
         posApiHelper.PrintSetFont(20.toByte(), 20.toByte(), 0x00.toByte())

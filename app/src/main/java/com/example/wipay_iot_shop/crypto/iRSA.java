@@ -20,6 +20,7 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+//import javax.xml.bind.DatatypeConverter;
 
 public class iRSA
 {
@@ -31,39 +32,39 @@ public class iRSA
 	public iRSA()
 	{
 	}
-	
+
 	public boolean isPrime(int _prime_number)
 	{
 		boolean result=true;
-		int i,m=0;      
-		
+		int i,m=0;
+
 		errString = null;
 		m = _prime_number/2;
-		
+
 		if((_prime_number==0) || (_prime_number==1))
 		{
 			errString = "Is not a prime number.";
 			result = false;
 		}
 		else
-		{  
+		{
 			for(i=2; i<=m; i++)
-			{      
+			{
 				if(_prime_number%i==0)
-				{      
-					result = false;      
+				{
+					result = false;
 					errString = "Is not a prime number.";
-					break;      
-				}      
-			}      
+					break;
+				}
+			}
 		}
-		
+
 		return result;
 	}
 
 	/**
-	 * 
-//	 * @param Key size
+	 *
+	 * @param _key_size
 	 * @return
 	 * @throws InvalidParameterException
 	 * @throws NoSuchAlgorithmException
@@ -73,151 +74,151 @@ public class iRSA
 	{
 		boolean ret=false;
 		KeyPairGenerator kpg;
-		
-        try 
-        {
-        	errString = null;
-        	if((_key_size%1024)==0)
-        	{
-		    	kpg = KeyPairGenerator.getInstance("RSA");
-		    	kpg.initialize(_key_size);
-		    	KeyPair kp = kpg.genKeyPair();
-		    	Key publicKey = kp.getPublic();
-		    	Key privateKey = kp.getPrivate();
-		    
-		    	KeyFactory fact = KeyFactory.getInstance("RSA");
-		    	RSAPublicKeySpec pubKey = (RSAPublicKeySpec) fact.getKeySpec(publicKey, RSAPublicKeySpec.class);
-		    	RSAPrivateKeySpec priKey = (RSAPrivateKeySpec) fact.getKeySpec(privateKey, RSAPrivateKeySpec.class);
-		    	
-		    	setPublicKey("00"+pubKey.getModulus().toString(16).toUpperCase(), pubKey.getPublicExponent().toString(16).toUpperCase(), 16);
-		    	setPrivateKey("00"+priKey.getModulus().toString(16).toUpperCase(), priKey.getPrivateExponent().toString(16).toUpperCase(), 16);
-	
-		    	ret = true;
-        	}
-        	else
-        	{
-        		errString = "Invalid Key size.";
-        	}
-        } 
-        catch(NoSuchAlgorithmException e) 
-        {
-        	errString = "NoSuchAlgorithmException";
-        	throw e;
-        } 
-        catch(InvalidParameterException e)
-        {
-        	errString = "InvalidParameterException";
-        	throw e;
-        } 
-        catch(InvalidKeySpecException e) 
-        {
-        	errString = "InvalidKeySpecException";
-        	throw e;
-        }
+
+		try
+		{
+			errString = null;
+			if((_key_size%1024)==0)
+			{
+				kpg = KeyPairGenerator.getInstance("RSA");
+				kpg.initialize(_key_size);
+				KeyPair kp = kpg.genKeyPair();
+				Key publicKey = kp.getPublic();
+				Key privateKey = kp.getPrivate();
+
+				KeyFactory fact = KeyFactory.getInstance("RSA");
+				RSAPublicKeySpec pubKey = (RSAPublicKeySpec) fact.getKeySpec(publicKey, RSAPublicKeySpec.class);
+				RSAPrivateKeySpec priKey = (RSAPrivateKeySpec) fact.getKeySpec(privateKey, RSAPrivateKeySpec.class);
+
+				setPublicKey("00"+pubKey.getModulus().toString(16).toUpperCase(), pubKey.getPublicExponent().toString(16).toUpperCase(), 16);
+				setPrivateKey("00"+priKey.getModulus().toString(16).toUpperCase(), priKey.getPrivateExponent().toString(16).toUpperCase(), 16);
+
+				ret = true;
+			}
+			else
+			{
+				errString = "Invalid Key size.";
+			}
+		}
+		catch(NoSuchAlgorithmException e)
+		{
+			errString = "NoSuchAlgorithmException";
+			throw e;
+		}
+		catch(InvalidParameterException e)
+		{
+			errString = "InvalidParameterException";
+			throw e;
+		}
+		catch(InvalidKeySpecException e)
+		{
+			errString = "InvalidKeySpecException";
+			throw e;
+		}
 		catch(Exception e)
 		{
 			errString = "Exception";
 			throw e;
 		}
 
-        return ret;
+		return ret;
 	}
 
 	/**
-	 * 
-//	 * @param key size - bit(1024, 2048, 4096, ...)
+	 *
+	 * @param _key_size - bit(1024, 2048, 4096, ...)
 	 * @param _prime_number
 	 * @return
 	 * @throws InvalidParameterException
 	 * @throws NoSuchAlgorithmException
-	 * @throws InvalidAlgorithmParameterException 
+	 * @throws InvalidAlgorithmParameterException
 	 * @throws if something wrong.
 	 */
 	public boolean genKeyPair(int _key_size, int _prime_number) throws InvalidParameterException,NoSuchAlgorithmException,InvalidKeySpecException, InvalidAlgorithmParameterException
 	{
 		boolean ret=false;
 		KeyPairGenerator kpg;
-		
-        try 
-        {
-        	errString = null;
-        	if((_key_size%1024)==0)
-        	{
-	        	if((ret=isPrime(_prime_number))==true)
-	        	{
-			    	kpg = KeyPairGenerator.getInstance("RSA");
-			    	RSAKeyGenParameterSpec kpgSpec = new RSAKeyGenParameterSpec(_key_size, BigInteger.valueOf(_prime_number));
-			    	kpg.initialize(kpgSpec);
-			    	
-			    	KeyPair kp = kpg.genKeyPair();
-			    	Key publicKey = kp.getPublic();
-			    	Key privateKey = kp.getPrivate();
-			    
-			    	KeyFactory fact = KeyFactory.getInstance("RSA");
-			    	RSAPublicKeySpec pubKey = (RSAPublicKeySpec) fact.getKeySpec(publicKey, RSAPublicKeySpec.class);
-			    	RSAPrivateKeySpec priKey = (RSAPrivateKeySpec) fact.getKeySpec(privateKey, RSAPrivateKeySpec.class);
-			    	
-			    	setPublicKey("00"+pubKey.getModulus().toString(16).toUpperCase(), pubKey.getPublicExponent().toString(16).toUpperCase(), 16);
-			    	setPrivateKey("00"+priKey.getModulus().toString(16).toUpperCase(), priKey.getPrivateExponent().toString(16).toUpperCase(), 16);
-		
-			    	ret = true;
-	        	}
-	        	else
-	        	{
-	            	errString = "Is not a prime number.";
-	        	}
-        	}
-        	else
-        	{
-            	errString = "Invalid Key size.";
-        	}
-        } 
-        catch(NoSuchAlgorithmException e) 
-        {
-        	errString = "NoSuchAlgorithmException";
-        	throw e;
-        } 
-        catch(InvalidParameterException e)
-        {
-        	errString = "InvalidParameterException";
-        	throw e;
-        } 
-        catch(InvalidKeySpecException e) 
-        {
-        	errString = "InvalidKeySpecException";
-        	throw e;
-        }
+
+		try
+		{
+			errString = null;
+			if((_key_size%1024)==0)
+			{
+				if((ret=isPrime(_prime_number))==true)
+				{
+					kpg = KeyPairGenerator.getInstance("RSA");
+					RSAKeyGenParameterSpec kpgSpec = new RSAKeyGenParameterSpec(_key_size, BigInteger.valueOf(_prime_number));
+					kpg.initialize(kpgSpec);
+
+					KeyPair kp = kpg.genKeyPair();
+					Key publicKey = kp.getPublic();
+					Key privateKey = kp.getPrivate();
+
+					KeyFactory fact = KeyFactory.getInstance("RSA");
+					RSAPublicKeySpec pubKey = (RSAPublicKeySpec) fact.getKeySpec(publicKey, RSAPublicKeySpec.class);
+					RSAPrivateKeySpec priKey = (RSAPrivateKeySpec) fact.getKeySpec(privateKey, RSAPrivateKeySpec.class);
+
+					setPublicKey("00"+pubKey.getModulus().toString(16).toUpperCase(), pubKey.getPublicExponent().toString(16).toUpperCase(), 16);
+					setPrivateKey("00"+priKey.getModulus().toString(16).toUpperCase(), priKey.getPrivateExponent().toString(16).toUpperCase(), 16);
+
+					ret = true;
+				}
+				else
+				{
+					errString = "Is not a prime number.";
+				}
+			}
+			else
+			{
+				errString = "Invalid Key size.";
+			}
+		}
+		catch(NoSuchAlgorithmException e)
+		{
+			errString = "NoSuchAlgorithmException";
+			throw e;
+		}
+		catch(InvalidParameterException e)
+		{
+			errString = "InvalidParameterException";
+			throw e;
+		}
+		catch(InvalidKeySpecException e)
+		{
+			errString = "InvalidKeySpecException";
+			throw e;
+		}
 		catch(Exception e)
 		{
-        	errString = "Exception";
+			errString = "Exception";
 			throw e;
 		}
 
-        return ret;
+		return ret;
 	}
 
 	/**
-	 * 
+	 *
 	 * @return RSAPublicKey object
 	 */
 	public RSAPublicKey getPublicKey()
 	{
 		return _pubKey;
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @return RSAPrivateKey object
 	 */
 	public RSAPrivateKey getPrivateKey()
 	{
 		return _priKey;
 	}
-	
+
 	/**
 	 * @category Set Private key (Hexadecimal only)
-//	 * @param private modulus
-//	 * @param private exponent
+	 * @param private_modulus
+	 * @param private_exponent
 	 * @return RSAPrivateKey object
 	 * @throws NoSuchAlgorithmException
 	 * @throws InvalidKeySpecException
@@ -246,10 +247,10 @@ public class iRSA
 			errString = "Exception";
 			throw e;
 		}
-		
+
 		return _priKey;
 	}
-	
+
 	/**
 	 * @category Set Public key (Hexadecimal only)
 	 * @param public_modulus
@@ -282,13 +283,13 @@ public class iRSA
 			errString = "Exception";
 			throw e;
 		}
-		
+
 		return _pubKey;
 	}
-	
+
 	/**
-//	 * @param private modulus
-//	 * @param private exponent
+	 * @param private_modulus
+	 * @param private_exponent
 	 * @param radix
 	 * @return RSAPrivateKey
 	 * @throws NoSuchAlgorithmException
@@ -319,13 +320,13 @@ public class iRSA
 			errString = "Exception";
 			throw e;
 		}
-		
+
 		return _priKey;
 	}
-	
+
 	/**
-//	 * @param public modulus
-//	 * @param public exponent
+	 * @param public_modulus
+	 * @param public_exponent
 	 * @param radix
 	 * @return RSAPublicKey object
 	 * @throws NoSuchAlgorithmException
@@ -356,7 +357,7 @@ public class iRSA
 			errString = "Exception";
 			throw e;
 		}
-		
+
 		return _pubKey;
 	}
 
@@ -377,7 +378,7 @@ public class iRSA
 		try
 		{
 			errString = null;
-			Cipher rsaCipher = Cipher.getInstance("RSA");
+			Cipher rsaCipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
 			rsaCipher.init(Cipher.ENCRYPT_MODE, _priKey);
 			cipher_data = rsaCipher.doFinal(data);
 		}
@@ -432,7 +433,7 @@ public class iRSA
 		try
 		{
 			errString = null;
-			Cipher rsaCipher = Cipher.getInstance("RSA");
+			Cipher rsaCipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
 			rsaCipher.init(Cipher.ENCRYPT_MODE, _pubKey);
 			cipher_data = rsaCipher.doFinal(data);
 		}
@@ -517,8 +518,8 @@ public class iRSA
 
 	/**
 	 * @category Decrypt RSA by Private key
-//	 * @param cipher data
-	 * @return 
+	 * @param cipher_data
+	 * @return
 	 * @throws NoSuchAlgorithmException
 	 * @throws IllegalBlockSizeException
 	 * @throws BadPaddingException
@@ -532,7 +533,7 @@ public class iRSA
 		try
 		{
 			errString = null;
-			Cipher rsaCipher = Cipher.getInstance("RSA");
+			Cipher rsaCipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
 			rsaCipher.init(Cipher.DECRYPT_MODE, _priKey);
 			data = rsaCipher.doFinal(cipher_data);
 		}
@@ -572,8 +573,8 @@ public class iRSA
 
 	/**
 	 * @category Decrypt RSA by Public key
-//	 * @param cipher data
-	 * @return 
+	 * @param cipher_data
+	 * @return
 	 * @throws NoSuchAlgorithmException
 	 * @throws IllegalBlockSizeException
 	 * @throws BadPaddingException
@@ -587,7 +588,7 @@ public class iRSA
 		try
 		{
 			errString = null;
-			Cipher rsaCipher = Cipher.getInstance("RSA");
+			Cipher rsaCipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
 			rsaCipher.init(Cipher.DECRYPT_MODE, _pubKey);
 			data = rsaCipher.doFinal(cipher_data);
 		}
@@ -626,8 +627,8 @@ public class iRSA
 	}
 
 	/**
-//	 * @param bytes - bytes number of random
-	 * @return Random HEX number 
+	 * @param bytes - bytes number of random
+	 * @return Random HEX number
 	 */
 //	public byte[] getRandom(int bytes)
 //	{
@@ -640,9 +641,9 @@ public class iRSA
 //
 //		return DatatypeConverter.parseHexBinary(ranStr.toString());
 //	}
-	
-	public String getError()
-	{
-		return errString;
-	}
+//
+//	public String getError()
+//	{
+//		return errString;
+//	}
 }

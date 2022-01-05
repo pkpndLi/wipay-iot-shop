@@ -178,7 +178,7 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener,EmvEvent,McrEv
 
     override fun onGetDataCard(dataEmv: DataEmv?) {
         runOnUiThread{
-            val itn =Intent(this,SaleTLEActivity::class.java).apply{
+            val itn =Intent(this,SaleTLEActivity2::class.java).apply{
                 putExtra("processing",true)
                 putExtra("cardNO",dataEmv!!.cardNO)
                 putExtra("cardEXD",dataEmv!!.cardEXD)
@@ -193,7 +193,7 @@ class PaymentActivity : AppCompatActivity() ,View.OnClickListener,EmvEvent,McrEv
 
     override fun onGetDataCardMagnetic(dataMag: DataMcr?) {
         runOnUiThread{
-            val itn =Intent(this,SaleTLEActivity::class.java).apply{
+            val itn =Intent(this,SaleTLEActivity2::class.java).apply{
                 putExtra("processing",true)
                 putExtra("cardNO",dataMag!!.cardNO)
                 putExtra("cardEXD",dataMag!!.cardEXD)

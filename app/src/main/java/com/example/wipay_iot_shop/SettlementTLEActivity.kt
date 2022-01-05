@@ -1,11 +1,13 @@
 package com.example.wipay_iot_shop
 
+import android.Manifest
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.Bitmap
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import android.view.View
 import android.widget.Button
@@ -16,8 +18,13 @@ import com.example.testpos.database.transaction.AppDatabase
 import com.example.testpos.database.transaction.SaleDao
 import com.example.testpos.database.transaction.SaleEntity
 import com.example.testpos.evenbus.data.MessageEvent
+import com.example.wipay_iot_shop.crypto.DataConverter
+import com.example.wipay_iot_shop.crypto.iDES
+import com.example.wipay_iot_shop.crypto.iRSA
 import com.example.wipay_iot_shop.transaction.ResponseDao
 import com.example.wipay_iot_shop.transaction.ResponseEntity
+import com.example.wipay_iot_shop.transaction.TransactionDao
+import com.example.wipay_iot_shop.transaction.TransactionEntity
 import com.imohsenb.ISO8583.builders.ISOClientBuilder
 import com.imohsenb.ISO8583.builders.ISOMessageBuilder
 import com.imohsenb.ISO8583.entities.ISOMessage
@@ -30,15 +37,19 @@ import com.imohsenb.ISO8583.exceptions.ISOException
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
+import java.io.File
 import java.io.IOException
+import java.lang.Exception
+import java.nio.charset.StandardCharsets
 import java.util.ArrayList
 import kotlin.experimental.and
 
-class SettlementActivity : AppCompatActivity() {
+class SettlementTLEActivity : AppCompatActivity() {
 
     var appDatabase : AppDatabase? = null
     var saleDAO : SaleDao? = null
     var responseDAO : ResponseDao? = null
+    var transactionDAO : TransactionDao? = null
 
     // Get SharedPreferences
     private val MY_PREFS = "my_prefs"
@@ -88,6 +99,8 @@ class SettlementActivity : AppCompatActivity() {
     private var bitmap: Bitmap? = null
     private val RC_WRITE_EXTERNAL_STORAGE = 123
 
+
+
     //    private val HOST = "192.168.43.195"
 //    var PORT = 5000
 //    private val HOST = "192.168.68.195"
@@ -100,11 +113,17 @@ class SettlementActivity : AppCompatActivity() {
 //    private val HOST = "203.148.160.47"
 //    var PORT = 7500
 
-    private val HOST = "223.27.234.243"
-    var PORT = 5000
+//    private val HOST = "192.168.178.187"
+//    var PORT = 5000
 
 //    private val HOST = "192.168.68.107"
 //    var PORT = 3000
+//Tle host
+//    private val HOST = "223.27.234.243"
+//    var PORT = 5000
+
+    private val HOST = "192.168.1.184"
+    var PORT = 5000
 
     var settlementFlag:Boolean? = null
     var firstTransactionFlag:Boolean? = null
@@ -113,19 +132,52 @@ class SettlementActivity : AppCompatActivity() {
     var endId: Int? = null
     var lastSettlementFlag: Boolean? = null
     var batchStan: Int? = null
+    var settlementPacketOri = ""
+    var lastSettlementPacket: ISOMessage? = null
+
+
+    //TLE config params
+    val rsa = iRSA()
+    val des = iDES()
+    val dataConverter = DataConverter()
+
+
+    var indicator = "HTLE"
+    var version = "04"
+    var reqType = "1"
+    var acqID = "120"
+    var LTID = "00000000"
+    var vendorID = "12000002"
+    var TE_ID = "12002002"
+    var makKey = "3991E2A306727C99B85BB694E4AD7F54"
+    var dekKey = "139EB7CE451189AA8E613C0BA77D9045"
+    var ltwkId = "9227"
+    var tid = "55555555"
+    var mid = "555555555555555"
+    var cipherText = "03E9D376D0C0D20C39540D3E2C1C5791"
+    var encryptMethod = "2000"
+    var encryptCounter = "0048"
+    var reserved = "00000000"
+    var _bit64:ByteArray = ByteArray(8)
+    var _bit57 = ""
+
+    private val HEX_UPPER = "0123456789ABCDEF".toCharArray()
+    private val HEX_LOWER = "0123456789abcdef".toCharArray()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_settlement)
+        setContentView(R.layout.activity_settlement_tleactivity)
 
         Log.d(log,"on settlementActivity.")
+        LTID = serialNumber()
+//        LTID = "5528a108"
         saleReport = findViewById(R.id.SaleReportActivity)
 
         var confirmBtn = findViewById<Button>(R.id.confirmBtn)
-         saleCountTxt = findViewById<TextView>(R.id.saleCountTxt)
-         saleAmountTxt = findViewById<TextView>(R.id.sumAmountTxt)
+        saleCountTxt = findViewById<TextView>(R.id.saleCountTxt)
+        saleAmountTxt = findViewById<TextView>(R.id.sumAmountTxt)
 
-//        var batchBtn = findViewById<Button>(R.id.batchBtn)
+        var batchBtn = findViewById<Button>(R.id.batchBtn)
 
         intent.apply {
             lastSettlementFlag = getBooleanExtra("lastSettlementFlag",false)
@@ -135,12 +187,19 @@ class SettlementActivity : AppCompatActivity() {
 
         Log.i(log,"lastSettlementFlag: " + lastSettlementFlag)
 
-         sp = getSharedPreferences(MY_PREFS, MODE_PRIVATE)
-         startId = sp.getInt("startId",1)
-         oldStartId = sp.getInt("oldStartId",0)
-         Log.w(log,"oldStartId: " + oldStartId)
-         Log.w(log,"startId: " + startId)
+        sp = getSharedPreferences(MY_PREFS, MODE_PRIVATE)
+        startId = sp.getInt("startId",1)
+        oldStartId = sp.getInt("oldStartId",0)
+        makKey = sp.getString("MAK",null).toString()
+        dekKey = sp.getString("DEK",null).toString()
+        ltwkId = sp.getString("LTWK_ID",null).toString()
+        Log.w(log,"oldStartId: " + oldStartId)
+        Log.w(log,"startId: " + startId)
 
+        //for test
+//        makKey = "3991E2A306727C99B85BB694E4AD7F54"
+//        dekKey = "139EB7CE451189AA8E613C0BA77D9045"
+//        ltwkId = "9227"
 
         if(oldStartId == startId){
             setDialog("Processing failed.","There has never been any transaction.")//
@@ -149,25 +208,27 @@ class SettlementActivity : AppCompatActivity() {
             saleCountTxt?.setText(sp.getString("saleCount","saleCount"))
             saleAmountTxt?.setText(sp.getString("saleAmount","saleAmount"))
 
-              Log.w(log,"endId" + endId)
-              Log.i(log,"In LastSettlement path")
+            Log.w(log,"endId" + endId)
+            Log.i(log,"In LastSettlement path")
 
-              stan = batchStan?.plus(1)
-              batchTotals = sp.getString("batchTotals","11111111111")
-              Log.e(log,"stan: "+ stan + "," + "batchTotals: " + batchTotals)
-              Log.e(log,"send lastSettlement Packet: " + lastSettlementPacket())
-              setDialogNormal("","please confirm transaction again.")
+            stan = batchStan?.plus(1)
+            batchTotals = sp.getString("batchTotals","11111111111")
+            Log.e(log,"stan: "+ stan + "," + "batchTotals: " + batchTotals)
+//            Log.e(log,"send lastSettlement Packet: " + lastSettlementPacket())
+            lastSettlementPacket = lastSettlementTlePacket(lastSettlementPacketWithMac().toString())
+            Log.e(log,"send lastSettlement Packet: " + lastSettlementPacket)
+            setDialogNormal("","please confirm transaction again.")
 
-          }else{
+        }else{
             setDialogQueryTransaction("","Wait a moment, the system is processing...")
-          }
+        }
 
         confirmBtn.setOnClickListener{
             //set settlementFlag = 1
 
             if(lastSettlementFlag == true){
 
-                sendPacket(lastSettlementPacket())
+                sendPacket(lastSettlementPacket)
 
                 val editor: SharedPreferences.Editor = sp.edit()
                 editor.putBoolean("lastSettlementFlag", false)
@@ -187,17 +248,195 @@ class SettlementActivity : AppCompatActivity() {
                 settlementFlag =  sp.getBoolean("settlementFlag",false)
                 Log.w(log,"settlementFlag: " + settlementFlag)
                 Log.e(log,"stan: "+ stan + "\n" + "batchTotals: " + batchTotals)
-                Log.e(log,"Settlement Packet: " + settlementPacket())
+                var settlementPacket: ISOMessage = settlementTlePacket(settlementPacketWithMac().toString())
+                Log.e(log,"Settlement Packet: " + settlementPacket)
 
-                sendPacket(settlementPacket())
+                sendPacket(settlementPacket)
             }
         }
 
-//        batchBtn.setOnClickListener {
+        batchBtn.setOnClickListener {
+
+
+        }
+
 //
-//
-//        }
+//        makKey = "3991E2A306727C99B85BB694E4AD7F54"
+//        dekKey = "139EB7CE451189AA8E613C0BA77D9045"
+//        ltwkId = "9227"
+//        batchTotals = "303032303030303030323131323235303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030"
+//        stan = 1
+//        Log.e(log,"ltid: " + LTID)
+//        Log.e(log,"dekKey: " + dekKey)
+//        Log.e(log,"makKey: " + makKey)
+//        Log.e(log,"ltwkKeyId: " + ltwkId)
+//        Log.e(log,"test settlemetTleMsg: " + settlementTlePacket(settlementPacketWithMac().toString()))
     }
+
+    //...tleFunc...
+
+    fun settlementTlePacket(isoMsg: String):ISOMessage{
+
+        Log.d(log,"...build tlePacket...")
+        Log.e(log,"original packet: " + isoMsg)
+        _bit64 = bit64Mac(isoMsg,makKey)
+        Log.e(log,"_bit64: " + _bit64)
+        var tlvLen = "0000"
+        _bit57 = bit57Ver4(indicator,version,acqID,LTID,encryptMethod,ltwkId,encryptCounter,tlvLen,reserved)
+        Log.e(log,"_bit57: " + _bit57)
+        var tlePacket = settlementPacketTle(hexStringToByteArray(_bit57)!!,_bit64)
+        Log.e(log,"settlementTleMsg: " + tlePacket)
+
+        return tlePacket!!
+    }
+
+    fun lastSettlementTlePacket(isoMsg: String):ISOMessage{
+
+        Log.d(log,"...build tlePacket...")
+        Log.e(log,"original packet: " + isoMsg)
+        _bit64 = bit64Mac(isoMsg,makKey)
+        Log.e(log,"_bit64: " + _bit64)
+        var tlvLen = "0000"
+        _bit57 = bit57Ver4(indicator,version,acqID,LTID,encryptMethod,ltwkId,encryptCounter,tlvLen,reserved)
+        Log.e(log,"_bit57: " + _bit57)
+        var tlePacket = lastSettlementPacketTle(hexStringToByteArray(_bit57)!!,_bit64)
+        Log.e(log,"settlementTleMsg: " + tlePacket)
+
+        return tlePacket!!
+    }
+
+
+    fun settlementPacketWithMac(): ISOMessage? {
+        return ISOMessageBuilder.Packer(VERSION.V1987)
+            .reconciliation()
+            .setLeftPadding(0x00.toByte())
+            .mti(MESSAGE_FUNCTION.Request, MESSAGE_ORIGIN.Acquirer)
+            .processCode("920000")
+            .setField(FIELDS.F11_STAN, stan.toString())
+            .setField(FIELDS.F24_NII_FunctionCode, "120")
+            .setField(FIELDS.F41_CA_TerminalID,hexStringToByteArray(convertStringToHex(tid, false)!!))
+            .setField(FIELDS.F42_CA_ID,hexStringToByteArray(convertStringToHex(mid, false)!!))
+            .setField(FIELDS.F60_Reserved_National,batchNumber)
+            .setField(FIELDS.F62_Reserved_Private,hexStringToByteArray("303030343841"))
+            .setField(FIELDS.F63_Reserved_Private,hexStringToByteArray(batchTotals.toString()))
+            .setField(FIELDS.F64_MAC,"")
+            .setHeader("6001278001")
+            .build()
+    }
+
+    fun lastSettlementPacketWithMac(): ISOMessage? {
+        return ISOMessageBuilder.Packer(VERSION.V1987)
+            .reconciliation()
+            .setLeftPadding(0x00.toByte())
+            .mti(MESSAGE_FUNCTION.Request, MESSAGE_ORIGIN.Acquirer)
+            .processCode("960000")
+            .setField(FIELDS.F11_STAN, stan.toString())
+            .setField(FIELDS.F24_NII_FunctionCode, "120")
+            .setField(FIELDS.F41_CA_TerminalID,hexStringToByteArray(convertStringToHex(tid, false)!!))
+            .setField(FIELDS.F42_CA_ID,hexStringToByteArray(convertStringToHex(mid, false)!!))
+            .setField(FIELDS.F60_Reserved_National, batchNumber)
+            .setField(FIELDS.F62_Reserved_Private, hexStringToByteArray("303030343841"))
+            .setField(FIELDS.F63_Reserved_Private, hexStringToByteArray(batchTotals.toString()))
+            .setField(FIELDS.F64_MAC, "")
+            .setHeader("6001278001")
+            .build()
+    }
+
+    fun bit64Mac(isoMsg: String,key: String): ByteArray{
+
+        var preMacMsg = isoMsg.substring(10)
+        var data = hexStringToByteArray(preMacMsg)
+        Log.e(log,"preMacMsg: " + preMacMsg)
+        var arraySize =  if(data?.size?.mod(8) != 0)
+            ((data?.size?.div(8))?.plus(1))?.times(8) else
+            ((data?.size?.div(8))?.plus(1))?.times(1)
+
+        var _data: ByteArray = ByteArray(arraySize!!)
+        System.arraycopy(data,0,_data,0, data?.size!!)
+//        Log.e(log,"data size: " + data.size)
+//        Log.e(log,"_data size: " + _data.size)
+//        var macData = print(_data)
+        var macData = bytesArrayToHexString(_data).toString()
+        Log.e(log,"mac pre encrypt: " + macData)
+        var eMacData = des.enDESede(dataConverter.HexString2HexByte(key),"DESede/CBC/NoPadding", dataConverter.HexString2HexByte(macData))
+        var macRawEncrypted = dataConverter.HexByteToHexString(eMacData)
+        Log.e(log,"macRawEncrypted(hex): " + macRawEncrypted)
+        var _eData = hexStringToByteArray(macRawEncrypted)
+        Log.e(log,"macRawEncrypted: " + _eData)
+        var _mac: ByteArray = ByteArray(8)
+        System.arraycopy(_eData, _eData?.size!! -8,_mac,0, 4)
+        Log.e(log,"_MAC: " + bytesArrayToHexString(_mac).toString())
+//        _bit64 = _mac
+//        var mac = (bytesArrayToHexString(_mac).toString()).uppercase(Locale.getDefault()) ?: String()
+//        Log.e(log,"mac is: " + bytesArrayToHexString(_mac).toString())
+        return _mac
+    }
+
+    fun bit57Ver4(indicator:String,version:String,acqID:String,tid:String,encryptMethod:String,ltwkId:String,encryptCount:String,TLVLen:String,reserved:String):String{
+
+        var tlvLen = ("0000" + TLVLen).substring(TLVLen.length)
+//        var tlvLen = "0015"
+//        var data = indicator + version + acqID + tid + encryptMethod  + ltwkId + encryptCount + "00" + tlvLen + reserved
+        var data = indicator + version + acqID + tid + encryptMethod  + ltwkId + encryptCount + "00"
+        Log.e(log,"bit57Data: " + data)
+        var hexData = convertStringToHex(data,false)
+        var tlvLenHex = convertStringToHex(tlvLen,false)
+        var reserved = convertStringToHex(reserved,false)
+//        var bit57Msg = hexData + hexStringToByteArray(tlvLenHex) + reserved + cipherText
+
+        var _bit57 = hexData + tlvLen + reserved
+        return _bit57
+    }
+
+    fun settlementPacketTle(bit57:ByteArray,bit64Mac:ByteArray): ISOMessage? {
+        return ISOMessageBuilder.Packer(VERSION.V1987)
+            .reconciliation()
+            .setLeftPadding(0x00.toByte())
+            .mti(MESSAGE_FUNCTION.Request, MESSAGE_ORIGIN.Acquirer)
+            .processCode("920000")
+            .setField(FIELDS.F11_STAN, stan.toString())
+            .setField(FIELDS.F24_NII_FunctionCode, "120")
+            .setField(FIELDS.F41_CA_TerminalID,hexStringToByteArray(convertStringToHex(tid, false)!!))
+            .setField(FIELDS.F42_CA_ID,hexStringToByteArray(convertStringToHex(mid, false)!!))
+            .setField(FIELDS.F57_Reserved_National,bit57)
+            .setField(FIELDS.F60_Reserved_National,batchNumber)
+            .setField(FIELDS.F62_Reserved_Private,hexStringToByteArray("303030343841"))
+            .setField(FIELDS.F63_Reserved_Private,hexStringToByteArray(batchTotals.toString()))
+            .setField(FIELDS.F64_MAC,bit64Mac)
+            .setHeader("6001278001")
+            .build()
+    }
+
+    fun lastSettlementPacketTle(bit57:ByteArray,bit64Mac:ByteArray): ISOMessage? {
+        return ISOMessageBuilder.Packer(VERSION.V1987)
+            .reconciliation()
+            .setLeftPadding(0x00.toByte())
+            .mti(MESSAGE_FUNCTION.Request, MESSAGE_ORIGIN.Acquirer)
+            .processCode("960000")
+            .setField(FIELDS.F11_STAN, stan.toString())
+            .setField(FIELDS.F24_NII_FunctionCode, "120")
+            .setField(FIELDS.F41_CA_TerminalID,hexStringToByteArray(convertStringToHex(tid, false)!!))
+            .setField(FIELDS.F42_CA_ID,hexStringToByteArray(convertStringToHex(mid, false)!!))
+            .setField(FIELDS.F57_Reserved_National,bit57)
+            .setField(FIELDS.F60_Reserved_National,batchNumber)
+            .setField(FIELDS.F62_Reserved_Private,hexStringToByteArray("303030343841"))
+            .setField(FIELDS.F63_Reserved_Private,hexStringToByteArray(batchTotals.toString()))
+            .setField(FIELDS.F64_MAC,bit64Mac)
+            .setHeader("6001278001")
+            .build()
+    }
+
+    fun serialNumber():String {
+        var androidId: String = Settings.Secure.getString(
+            contentResolver,
+            Settings.Secure.ANDROID_ID
+        )
+//        var androidId = "24215d325528a108"
+        var sn = androidId.substring(androidId.length - 8)
+        return sn
+    }
+
+    //...tleFunc...
 
     override fun onStart() {
         super.onStart()
@@ -242,8 +481,8 @@ class SettlementActivity : AppCompatActivity() {
                 var response = bytesArrayToHexString(client.sendMessageSync(packet))
                 EventBus.getDefault().post(
                     MessageEvent(
-                    "iso_response",
-                    response.toString())
+                        "iso_response",
+                        response.toString())
                 )
 
                 client.disconnect()
@@ -281,19 +520,21 @@ class SettlementActivity : AppCompatActivity() {
 
         if(responseCode == "3030"){
 
-                manageSettlementApprove()
+            manageSettlementApprove()
 
         }else{
 
-            var settlementError  = SaleEntity(null,null,stan)
+//            var settlementError  = SaleEntity(null,null,stan)
+            var settlementError  = TransactionEntity(null,null,null,stan)
             var responseSettlementError = ResponseEntity(null,null)
 
             Thread{
 
                 accessDatabase()
-                saleDAO?.insertSale(settlementError)
+//                saleDAO?.insertSale(settlementError)
+                transactionDAO?.insertTransaction(settlementError)
                 responseDAO?.insertResponseMsg(responseSettlementError)
-                readStan = saleDAO?.getSale()?.STAN
+                readStan = transactionDAO?.getTransaction()?.STAN
                 readResponseMsg = responseDAO?.getResponseMsg()?.responseMsg
 //                Log.i("log_tag","saveTransaction :  " + )
                 Log.w(log,"saveSTAN : " + readStan)
@@ -302,21 +543,21 @@ class SettlementActivity : AppCompatActivity() {
             }.start()
 
 
-                if(responseCode == "3935"){
+            if(responseCode == "3935"){
 
-                    Log.i(log,"go to batch upload transaction.")
+                Log.i(log,"go to batch upload transaction.")
 
-                    val itn =Intent(this,BatchUploadActivity::class.java).apply{
-                        putExtra("startId",startId)
-                        putExtra("endId",endId)
-                    }
-                    startActivity(itn)
-
-                } else{
-
-                    errorCode(responseCode,"Please check your problem.")
-                    Log.e(log,"Settlement Error!!!.")
+                val itn = Intent(this,BatchUploadTLEActivity::class.java).apply{
+                    putExtra("startId",startId)
+                    putExtra("endId",endId)
                 }
+                startActivity(itn)
+
+            } else{
+
+                errorCode(responseCode,"Please check your problem.")
+                Log.e(log,"Settlement Error!!!.")
+            }
 
         }
 
@@ -340,21 +581,25 @@ class SettlementActivity : AppCompatActivity() {
         Log.w(log,"settlementFlag: " + settlementFlag)
         Log.w(log,"firstTransactionFlag: " + firstTransactionFlag)
 
-        var settlementApprove  = SaleEntity(null,null,stan)
+//        var settlementApprove  = SaleEntity(null,null,stan)
+        var settlementApprove  = TransactionEntity(null,null,null,stan)
         var responseSettlementApprove = ResponseEntity(null,null)
 
         Thread{
 
             accessDatabase()
-            saleDAO?.insertSale(settlementApprove)
+//            saleDAO?.insertSale(settlementApprove)
+            transactionDAO?.insertTransaction(settlementApprove)
             responseDAO?.insertResponseMsg(responseSettlementApprove)
-            readStan = saleDAO?.getSale()?.STAN
+//            readStan = saleDAO?.getSale()?.STAN
+            readStan = transactionDAO?.getTransaction()?.STAN
             readResponseMsg = responseDAO?.getResponseMsg()?.responseMsg
 //                Log.i("log_tag","saveTransaction :  " + )
             Log.w(log,"saveSTAN : " + readStan)
             Log.w(log,"saveResponse : " + readResponseMsg)
 
         }.start()
+
     }
 
 
@@ -362,6 +607,7 @@ class SettlementActivity : AppCompatActivity() {
         appDatabase = AppDatabase.getAppDatabase(this)
         saleDAO = appDatabase?.saleDao()
         responseDAO = appDatabase?.responseDao()
+        transactionDAO = appDatabase?.transactionDao()
 
     }
 
@@ -410,9 +656,11 @@ class SettlementActivity : AppCompatActivity() {
 
                 Thread{
                     //query transaction from DB and sum saleCount and saleAmount
-                   accessDatabase()
-                    readStan = saleDAO?.getSale()?.STAN
-                    readId = saleDAO?.getSale()?._id
+                    accessDatabase()
+//                    readStan = saleDAO?.getSale()?.STAN
+                    readStan = transactionDAO?.getTransaction()?.STAN
+//                    readId = saleDAO?.getSale()?._id
+                    readId = transactionDAO?.getTransaction()?._id
                     endId = readId!!
 
                     Log.w(log, "startId: " + startId)
@@ -421,7 +669,8 @@ class SettlementActivity : AppCompatActivity() {
 
                     for(i in startId?.rangeTo(endId!!)!!){
 //                     for(i in 1..3){
-                        readIsoMsg = saleDAO?.getSaleWithID(i)?.isoMsg
+//                        readIsoMsg = saleDAO?.getSaleWithID(i)?.isoMsg
+                        readIsoMsg = transactionDAO?.getTransactionWithID(i)?.isoMsg
                         readResponseMsg = responseDAO?.getResponseMsgWithID(i)?.responseMsg
 //                    isoMsgArray.add(readIsoMsg!!)
                         if(readIsoMsg != null){
@@ -440,7 +689,7 @@ class SettlementActivity : AppCompatActivity() {
                         Log.e(log, "Read isoMsg: " + readIsoMsg)
                         Log.e(log, "Read responseMsg: " + readResponseMsg)
 
-                     }
+                    }
 
                     Log.e(log, "Sale Count: " + saleCount)
                     Log.e(log, "Response Count: " + responseCount)
@@ -471,10 +720,10 @@ class SettlementActivity : AppCompatActivity() {
                 }.start()
             })
 
-            DialogInterface.OnClickListener{ dialog, which ->
-                Toast.makeText(applicationContext,android.R.string.cancel, Toast.LENGTH_LONG).show()
-                startActivity(Intent(this,MenuActivity::class.java))
-            }
+        DialogInterface.OnClickListener{ dialog, which ->
+            Toast.makeText(applicationContext,android.R.string.cancel, Toast.LENGTH_LONG).show()
+            startActivity(Intent(this,MenuActivity::class.java))
+        }
 
         val dialog = builder.create()
         dialog.show()
@@ -492,7 +741,8 @@ class SettlementActivity : AppCompatActivity() {
         builder.setTitle("Transaction Error.")
         builder.setMessage("Error code: " + code +",  ${msg}")
         //builder.setPositiveButton("OK", DialogInterface.OnClickListener(function = x))
-        builder.setPositiveButton(getString(R.string.ok),DialogInterface.OnClickListener{ dialog, which ->
+        builder.setPositiveButton(getString(R.string.ok),
+            DialogInterface.OnClickListener{ dialog, which ->
             Toast.makeText(applicationContext,android.R.string.ok, Toast.LENGTH_LONG).show()
             startActivity(Intent(this,MenuActivity::class.java))
         })
@@ -527,7 +777,6 @@ class SettlementActivity : AppCompatActivity() {
         val dialog = builder.create()
         dialog.show()
     }
-
 
 
     override fun onRequestPermissionsResult(
@@ -614,5 +863,24 @@ class SettlementActivity : AppCompatActivity() {
     }
 
 
-}
+    fun convertStringToHex(str: String, lowercase: Boolean): String? {
+        val HEX_ARRAY: CharArray = if (lowercase) HEX_LOWER else HEX_UPPER
+        val bytes = str.toByteArray(StandardCharsets.UTF_8)
 
+        // two chars form the hex value.
+        val hex = CharArray(bytes.size * 2)
+        for (j in bytes.indices) {
+
+            // 1 byte = 8 bits,
+            // upper 4 bits is the first half of hex
+            // lower 4 bits is the second half of hex
+            // combine both and we will get the hex value, 0A, 0B, 0C
+            val v = (bytes[j] and 0xFF.toByte()).toInt() // byte widened to int, need mask 0xff
+            // prevent sign extension for negative number
+            hex[j * 2] = HEX_ARRAY[v ushr 4] // get upper 4 bits
+            hex[j * 2 + 1] = HEX_ARRAY[v and 0x0F] // get lower 4 bits
+        }
+        return String(hex)
+    }
+
+}

@@ -10,6 +10,8 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import com.example.testpos.database.transaction.*
 import com.example.testpos.evenbus.data.MessageEvent
+import com.example.wipay_iot_shop.transaction.ResponseDao
+import com.example.wipay_iot_shop.transaction.ResponseEntity
 import com.imohsenb.ISO8583.builders.ISOClientBuilder
 import com.imohsenb.ISO8583.builders.ISOMessageBuilder
 import com.imohsenb.ISO8583.entities.ISOMessage
@@ -385,7 +387,8 @@ private val HOST = "192.168.1.184"
         time = bytesArrayToHexString(isoMessageUnpacket.getField(12)).toString()
         date = bytesArrayToHexString(isoMessageUnpacket.getField(13)).toString()
         saleStan = bytesArrayToHexString(isoMessageUnpacket.getField(11)).toString()
-        responseCode = bytesArrayToHexString(isoMessageUnpacket.getField(39)).toString()
+        responseCode = isoMessageUnpacket.getField(39).toString()
+        responseCode = "00"
         Log.i(log,"MTI:" + MTI)
         Log.i(log,"amount:" + amount)
         Log.i(log,"saleStan:" + saleStan)

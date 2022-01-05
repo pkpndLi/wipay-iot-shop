@@ -6,11 +6,19 @@ import androidx.room.PrimaryKey
 import org.jetbrains.annotations.NotNull
 
 @Entity
-data class ResponseEntity(
+data class TransactionEntity(
+
     @PrimaryKey(autoGenerate = true)
     @NotNull
-    val _id: Int?,
+    var _id: Int?,
 
-    @ColumnInfo(name = "response_msg")
-    val responseMsg: String?
+    @ColumnInfo(name = "iso_msg")
+    val isoMsg: String?,
+
+    @ColumnInfo(name = "iso_msg_tle")
+    val isoMsgTle: String?,
+
+    @ColumnInfo(name = "STAN")
+    val STAN: Int?
+
 )

@@ -9,8 +9,6 @@ import android.provider.Settings
 import android.util.Log
 import android.widget.Button
 import androidx.appcompat.app.AlertDialog
-import com.example.testpos.database.transaction.AppDatabase
-import com.example.testpos.database.transaction.SaleDao
 import com.example.testpos.evenbus.data.MessageEvent
 import com.imohsenb.ISO8583.builders.ISOClientBuilder
 import com.imohsenb.ISO8583.builders.ISOMessageBuilder
@@ -38,10 +36,12 @@ import kotlin.experimental.and
 import android.preference.PreferenceManager
 import android.util.Log.e
 import android.widget.TextView
-import com.example.testpos.database.transaction.ResponseDao
+import com.example.testpos.database.transaction.AppDatabase
+import com.example.testpos.database.transaction.SaleDao
 import com.example.wipay_iot_shop.crypto.DataConverter
 import com.example.wipay_iot_shop.crypto.iDES
 import com.example.wipay_iot_shop.crypto.iRSA
+import com.example.wipay_iot_shop.transaction.ResponseDao
 import java.security.interfaces.RSAPrivateKey
 
 
@@ -66,10 +66,10 @@ class DownloadKey : AppCompatActivity() {
     var TE_ID = "12002002"
 
     var TE_PIN = "22222222"
-    var keyIdLtmk = "1095"
+    var keyIdLtmk = "4339"
     var keyKCVltmk = ""
     var ltwkId = "0000"
-    var tid = "22222222"
+    var tid = "55555555"
     var padding = "1234"
     var pinHash:String  = ""
     var txnHash:String = ""
@@ -89,11 +89,13 @@ class DownloadKey : AppCompatActivity() {
 
     private val HOST = "192.168.1.184"
     var PORT = 5000
+//    private val HOST = "192.168.1.184"
+//    var PORT = 5000
 
     private val HEX_UPPER = "0123456789ABCDEF".toCharArray()
     private val HEX_LOWER = "0123456789abcdef".toCharArray()
 
-    val MS_key = "D18AEE6B000605F1193EC9A0E254172C"
+    val MS_key = "EB8F1A2986CF113175EC2102C26161BB"
 //    val rsa: iRSA? = null
 //    val dataConverter : DataConverter? = null
 
@@ -106,6 +108,7 @@ class DownloadKey : AppCompatActivity() {
     var MAK : String?=null
     var LTWK_ID : String?=null
     var masterKey : String?=null
+    var masterKeyID : String? = null
 
 
 
@@ -119,6 +122,7 @@ class DownloadKey : AppCompatActivity() {
         val rsa_primod = sp.getString("rsa_privatekey_mod",null)
         val rsa_priexp = sp.getString("rsa_privatekey_exp",null)
         masterKey = sp.getString("MasterKey",null)
+        masterKeyID = sp.getString("MasterKeyID",null)
         DEK = sp.getString("DEK",null)
         MAK = sp.getString("MAK",null)
         LTWK_ID = sp.getString("LTWK_ID",null)
@@ -131,6 +135,7 @@ class DownloadKey : AppCompatActivity() {
 
         setTextView("LTID",LTID)
         setTextView("Master key",masterKey)
+        setTextView("Master key ID",masterKeyID)
         setTextView("Working key MAK",MAK)
         setTextView("Working key DEK",DEK)
         setTextView("Working key ID",LTWK_ID)
@@ -230,10 +235,10 @@ class DownloadKey : AppCompatActivity() {
         }
 
         ltwkBtn.setOnClickListener{
-
+            Log.e(log,"testMasterKeyID :: "+masterKeyID)
             ltwkState = true
             stan = stan.plus(1)
-            strBit62Ltwk = bit62Ltwk(indicator,version,reqType,acqID,acqID,LTID,vendorID,keyIdLtmk,ltwkId)
+            strBit62Ltwk = bit62Ltwk(indicator,version,reqType,acqID,acqID,LTID,vendorID,masterKeyID!!,ltwkId)
             Log.e(log,"bit62Ltwk: " + strBit62Ltwk)
             Log.e(log, "send ltwk")
             Log.w(log, "ltwk msg: " + ltwkPacket())
@@ -286,18 +291,30 @@ class DownloadKey : AppCompatActivity() {
                 Log.i(log,"test len = "+bit62Msg.length)
                 var getKeyIdMsg = getKeyId(bit62Msg)
                 var getKeyKCVMsg = getKeyKCV(bit62Msg)
-                var getMasterKey = get_eKey(bit62Msg)
-                val editor: SharedPreferences.Editor = sp.edit()
-                    editor.putString("MasterKey", "52AFE2F6D49B5C877BD5F859AF4D5333")
+                var getMasterKey = dataConverter.HexByteToHexString(rsa.deRSA_private(dataConverter.HexString2HexByte(get_eKey(bit62Msg))))
+
+
+                if (ChackKCV(getKeyKCVMsg,getMasterKey) == true){
+                    masterKey = getMasterKey
+                    masterKeyID = getKeyIdMsg
+                    val editor: SharedPreferences.Editor = sp.edit()
+                    editor.putString("MasterKey", getMasterKey)
+                    editor.putString("MasterKeyID",getKeyIdMsg)
                     editor.commit()
-//                if (ChackKCV(getKeyKCVMsg,getMasterKey) == true){
-//
-//                    val editor: SharedPreferences.Editor = sp.edit()
-//                    editor.putString("MasterKey", getMasterKey)
-//                }
+                }else{
+                    setNormalDialog("error","Wrong KCV")
+                }
                 Log.w(log,"resr_geteKey_func: "+ getMasterKey)
                 Log.w(log,"test getKeyId func: " + getKeyIdMsg)
                 Log.w(log,"test getKeyKCV func: " + getKeyKCVMsg)
+
+                view = ""
+                setTextView("LTID",LTID)
+                setTextView("Master key",masterKey)
+                setTextView("Master key ID",masterKeyID)
+                setTextView("Working key MAK",MAK)
+                setTextView("Working key DEK",DEK)
+                setTextView("Working key ID",LTWK_ID)
 
                 ltmkState = false
 
@@ -309,8 +326,8 @@ class DownloadKey : AppCompatActivity() {
 
 
 
-                var DEK = des.deDESede(dataConverter.HexString2HexByte(MS_key),"DESede/CBC/NoPadding", dataConverter.HexString2HexByte(get_eDEK(bit62Msg)))
-                var MAK = des.deDESede(dataConverter.HexString2HexByte(MS_key),"DESede/CBC/NoPadding", dataConverter.HexString2HexByte(get_eMAK(bit62Msg)))
+                var DEK = des.deDESede(dataConverter.HexString2HexByte(masterKey),"DESede/CBC/NoPadding", dataConverter.HexString2HexByte(get_eDEK(bit62Msg)))
+                var MAK = des.deDESede(dataConverter.HexString2HexByte(masterKey),"DESede/CBC/NoPadding", dataConverter.HexString2HexByte(get_eMAK(bit62Msg)))
                 var KCV_MAK = if (get_KCV_DEK(bit62Msg)==dataConverter.HexByteToHexString(des.enDESede(MAK, "DESede/CBC/NoPadding", dataConverter.HexString2HexByte("0000000000000000"))).substring(0,8)) true else false
                 var KCV_DEK = if (get_KCV_MAK(bit62Msg)==dataConverter.HexByteToHexString(des.enDESede(DEK, "DESede/CBC/NoPadding", dataConverter.HexString2HexByte("0000000000000000"))).substring(0,8)) true else false
                 if (KCV_MAK&&KCV_DEK){
@@ -328,18 +345,16 @@ class DownloadKey : AppCompatActivity() {
 
                     view = ""
                     setTextView("LTID",LTID)
-                    setTextView("Master key",MS_key)
+                    setTextView("Master key",masterKey)
+                    setTextView("Master key ID",masterKeyID)
                     setTextView("Working key MAK",dataConverter.HexByteToHexString(MAK))
                     setTextView("Working key DEK",dataConverter.HexByteToHexString(DEK))
                     setTextView("Working key ID",hexToString(get_LTMK_ID(bit62Msg)!!))
-
                     startActivity(Intent(this, MenuActivity::class.java))
                 }
 
                 ltwkState = false
             }
-
-
         }else{
 
             var errorMsg = hexToString(codeUnpack(responseMsg,63).toString())
@@ -395,14 +410,10 @@ class DownloadKey : AppCompatActivity() {
         var keyId:String = hexToString(keyIdMsg).toString()
         return keyId
     }
-//    fun ChackKCV(KCV:String,MasterKey:String):Boolean?{
-////        var kcv = des.deDESede(dataConverter.HexString2HexByte("KEY"), "DESede/CBC/NoPadding", dataConverter.HexString2HexByte("0000000000000000"));
-//
-//        if (KCV == dataConverter.HexByteToHexString(kcv).substring(0,8)){
-//            return true
-//        }
-//        return false
-//    }
+    fun ChackKCV(KCV:String,MasterKey:String):Boolean?{
+        var kcv = des.enDESede(dataConverter.HexString2HexByte(MasterKey), "DESede/CBC/NoPadding", dataConverter.HexString2HexByte("0000000000000000"));
+        return KCV == dataConverter.HexByteToHexString(kcv).substring(0,6)
+    }
 
     fun getKeyKCV(bit62 : String):String{
         var keyKCVMsg = bit62.substring(534,546)
@@ -413,25 +424,6 @@ class DownloadKey : AppCompatActivity() {
         var eKey:String? = null
         if (bit62.length == 586){
             eKey = bit62.substring(22,bit62.length-52).toUpperCase()
-//            Log.i(log,"test len = "+eKey.toUpperCase())
-//            val data = byteArrayOf(
-//                0xf0.toByte(),
-//                0xf1.toByte(),
-//                0xf2.toByte(),
-//                0xf3.toByte(), 0xf4.toByte(), 0xf5.toByte(), 0xf6.toByte(), 0xf7.toByte()
-//            )
-//
-//            Log.e(log,"HexString2HexByte" + dataConverter.HexByteToHexString(dataConverter.HexString2HexByte(eKey.toUpperCase())))
-//            Log.e(log,"PRIVATE KEY MOD:: " +rsa.privateKey.modulus.toString(16).toString())
-////            Log.e(log,"PRIVATE KEY EXP" + dataConverter.HexByteToHexString())
-//            var result: ByteArray? = null
-////            result = rsa.enRSA_public(data)
-//            try {
-//                result = rsa.deRSA_private(dataConverter.HexString2HexByte(eKey.toUpperCase()))
-//            }catch (E:Exception){
-//                Log.e(log," Exception :: "+E.printStackTrace())
-//            }
-//                Log.i("log_tag","decryption eKey :  " + dataConverter.HexByteToHexString(result))
         }
         return eKey
     }

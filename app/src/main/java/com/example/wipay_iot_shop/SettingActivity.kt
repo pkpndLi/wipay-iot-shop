@@ -54,7 +54,7 @@ class SettingActivity : AppCompatActivity() {
                     startActivity(itn)
                 }
                 2 -> {
-                    startActivity(Intent(this, SettlementActivity::class.java))
+                    startActivity(Intent(this, SettlementTLEActivity::class.java))
                 }
                 3 -> {
                     startActivity(Intent(this, DownloadKey::class.java))
