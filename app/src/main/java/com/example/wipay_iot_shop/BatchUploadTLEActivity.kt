@@ -131,11 +131,11 @@ class BatchUploadTLEActivity : AppCompatActivity() {
 //    var PORT = 3000
 
 //Tle host
-//    private val HOST = "223.27.234.243"
-//    var PORT = 5000
-
-    private val HOST = "192.168.1.184"
+    private val HOST = "223.27.234.243"
     var PORT = 5000
+//
+//    private val HOST = "192.168.1.184"
+//    var PORT = 5000
 
     private val HEX_UPPER = "0123456789ABCDEF".toCharArray()
     private val HEX_LOWER = "0123456789abcdef".toCharArray()
@@ -587,9 +587,8 @@ class BatchUploadTLEActivity : AppCompatActivity() {
                             responseCount = responseCount?.plus(1)
                             batchStan = batchStan?.plus(1)           //set stan
                             isoUnpackSale(readIsoMsg.toString())            //set bit 2,14
-
+                            isoUnpackResponse(readResponseMsg.toString())//set bit 4,12,13,39,11
                             if(n == endId){
-                                isoUnpackResponse(readResponseMsg.toString())   //set bit 4,12,13,39,11
 
                                 setPccCode = lastPccCode                    //set bit 3
                             }

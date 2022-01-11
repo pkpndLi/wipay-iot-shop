@@ -84,11 +84,11 @@ class DownloadKey : AppCompatActivity() {
     var ltwkState:Boolean = false
 
 
-//    private val HOST = "223.27.234.243"
-//    var PORT = 5000
-
-    private val HOST = "192.168.1.184"
+    private val HOST = "223.27.234.243"
     var PORT = 5000
+
+//    private val HOST = "192.168.1.184"
+//    var PORT = 5000
 //    private val HOST = "192.168.1.184"
 //    var PORT = 5000
 
