@@ -20,6 +20,7 @@ import com.example.testpos.evenbus.data.MessageEvent
 import com.example.wipay_iot_shop.crypto.DataConverter
 import com.example.wipay_iot_shop.crypto.iDES
 import com.example.wipay_iot_shop.crypto.iRSA
+import com.example.wipay_iot_shop.printer.Printer
 import com.example.wipay_iot_shop.transaction.*
 import com.imohsenb.ISO8583.builders.ISOClientBuilder
 import com.imohsenb.ISO8583.builders.ISOMessageBuilder
@@ -50,6 +51,7 @@ class SaleTLEActivity2 : AppCompatActivity() {
     var stuckReverseDAO : StuckReverseDao? = null
     var responseDAO : ResponseDao? = null
     var transactionDAO : TransactionDao? = null
+    var printer : Printer?=null
 
     private val MY_PREFS = "my_prefs"
     private lateinit var sp: SharedPreferences
@@ -454,8 +456,7 @@ class SaleTLEActivity2 : AppCompatActivity() {
                         Log.w("log_tag","saveResponse : " + readResponseMsg)
 
                     }.start()
-
-
+                    printer?.printSlip(menuName,totalAmount)
 
                 }else{
 

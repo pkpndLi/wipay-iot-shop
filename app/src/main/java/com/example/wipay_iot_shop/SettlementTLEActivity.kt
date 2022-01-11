@@ -21,6 +21,7 @@ import com.example.testpos.evenbus.data.MessageEvent
 import com.example.wipay_iot_shop.crypto.DataConverter
 import com.example.wipay_iot_shop.crypto.iDES
 import com.example.wipay_iot_shop.crypto.iRSA
+import com.example.wipay_iot_shop.printer.Printer
 import com.example.wipay_iot_shop.transaction.ResponseDao
 import com.example.wipay_iot_shop.transaction.ResponseEntity
 import com.example.wipay_iot_shop.transaction.TransactionDao
@@ -50,7 +51,7 @@ class SettlementTLEActivity : AppCompatActivity() {
     var saleDAO : SaleDao? = null
     var responseDAO : ResponseDao? = null
     var transactionDAO : TransactionDao? = null
-
+    var printer : Printer?=null
     // Get SharedPreferences
     private val MY_PREFS = "my_prefs"
     private lateinit var sp: SharedPreferences
@@ -521,7 +522,7 @@ class SettlementTLEActivity : AppCompatActivity() {
         if(responseCode == "3030"){
 
             manageSettlementApprove()
-
+            printer!!.printSlipSettlement(saleCount.toString(),saleAmount)
         }else{
 
 //            var settlementError  = SaleEntity(null,null,stan)
