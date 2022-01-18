@@ -456,6 +456,7 @@ class SaleTLEActivity2 : AppCompatActivity() {
                         Log.w("log_tag","saveResponse : " + readResponseMsg)
 
                     }.start()
+                    printer = Printer()
                     printer?.printSlip(menuName,totalAmount)
 
                 }else{

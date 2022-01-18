@@ -522,7 +522,8 @@ class SettlementTLEActivity : AppCompatActivity() {
         if(responseCode == "3030"){
 
             manageSettlementApprove()
-            printer!!.printSlipSettlement(saleCount.toString(),saleAmount)
+
+
         }else{
 
 //            var settlementError  = SaleEntity(null,null,stan)
@@ -600,6 +601,7 @@ class SettlementTLEActivity : AppCompatActivity() {
             Log.w(log,"saveResponse : " + readResponseMsg)
 
         }.start()
+        printer = Printer()
         printer!!.printSlipSettlement(saleCount.toString(),saleAmount)
     }
 
